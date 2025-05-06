@@ -16,6 +16,10 @@ seaborn
 # Utility
 tqdm
 requests
+python-dotenv
 
 # Notebook support (optional)
 notebook
+
+# Addicional
+openai

@@ -19,12 +19,22 @@ TFM_damageCarClassifier/
 ├── data/                  # Contains train/ and val/ folders
 ├── models/                # YOLO weights, etc.
 ├── src/
-│   ├── preprocess.py      # Data loading and transformations
-│   ├── infer_yolo.py
-│   ├── infer_chatgpt.py
-│   ├── infer_zero_shot.py
-│   ├── evaluate.py
+│   ├── eval/
+│   │   ├── eval_yolo.py
+│   │   ├── eval_zero_shot.py
+│   │   ├── eval_chat_gpt.py
+│   ├── infer/
+│   │   ├── infer_yolo.py
+│   │   ├── infer_zero_shot.py
+│   │   ├── infer_chat_gpt.py
+│   ├── train/
+│   │   ├── train_yolo.py
+│   │   ├── train_zero_shot.py
 │   └── config.py
+│   └── preprocess.py
+├── tests/
+│   ├── test_chatgpt.py
+│   └── test_zero_shot.py
 ├── run_comparison.py      # Entry point: run all methods and compare
 ├── requirements.txt
 ├── .gitignore
@@ -87,3 +97,74 @@ CLIP is a multi-modal model that maps both images and text into the same embeddi
 	3.	During inference, use the same CLIP image encoder + your trained classifier to predict labels.
 
 This bypasses the need for GPU-heavy fine-tuning while still leveraging powerful representations from CLIP.
+
+
+## Next Steps ChatGPT
+###  Implement Best Practices for Prompt Engineering
+
+Crafting effective prompts is crucial for obtaining accurate and relevant responses from the API.
+
+## Next Steps Fine-Tuning YOLOv8
+1. **Prepare Dataset**  
+   - Convert images into YOLO format: each image needs a `.txt` annotation file with `class_id x_center y_center width height`.
+   - Organize into:  
+     ```
+     data/
+       train/
+         images/
+         labels/
+       val/
+         images/
+         labels/
+     ```
+
+2. **Create Data Config File**  
+   - Define class names, paths, and number of classes for training.
+
+3. **Select a Pretrained Model**  
+   - Use a base model like `yolov8n.pt` or `yolov8s.pt` for transfer learning.
+
+4. **Train the Model**  
+   - Use the Ultralytics CLI or Python API to run training with your config and dataset.
+
+5. **Evaluate Performance**  
+   - Compare metrics (mAP, precision, recall) with ChatGPT and CLIP classifiers.
+
+6. **Export Model**  
+   - Save trained weights and convert to ONNX or other formats if needed.
+
+7. **Integrate into Inference Pipeline**  
+   - Use `infer_yolo.py` to run predictions and unify evaluation with other models.
+
+
+## Try alternatives to YOLO for Vehicle Damage Detection
+
+While YOLOv8 is a strong baseline for object detection, several other models may offer better performance or additional capabilities for subtle or localized damage classification.
+
+### 1. **DETR / DINO / DINOv2**  
+- Transformer-based object detectors from Meta.
+- Excellent at handling complex scenes and subtle features (scratches, dents).
+- Use when damage is irregular or hard to localize.
+- [facebook/detr](https://huggingface.co/facebook/detr-resnet-50), [DINOv2 repo](https://github.com/facebookresearch/dinov2)
+
+### 2. **EfficientDet**  
+- Lightweight yet accurate object detector from Google.
+- Great for mobile or edge deployment.
+- Scales well with small or noisy datasets.
+
+### 3. **Mask R-CNN**  
+- Detects objects and provides pixel-level segmentation.
+- Best choice when damage area (scratch, dent) shape matters.
+- Useful for measuring or visualizing affected regions.
+- Available in Detectron2 and MMDetection.
+
+### 4. **ConvNeXt (Fine-Tuned Classifier)**  
+- A high-performance image classifier based on ConvNet++.
+- Ideal for whole-image classification of damage types.
+- Simpler and more accurate than YOLO when localization is not needed.
+- [facebook/convnext-base-224](https://huggingface.co/facebook/convnext-base-224)
+
+### 5. **Vision Transformers (ViT, Swin, SAM-ViT)**  
+- Transformer-based architectures for image classification and segmentation.
+- High interpretability and performance.
+- Great fit for custom training or as backbones in hybrid detection models.
