@@ -1,0 +1,21 @@
+# Core ML libraries
+torch>=2.0
+torchvision
+transformers
+scikit-learn
+numpy
+
+# Image processing
+Pillow
+opencv-python
+
+# Plotting & analysis
+matplotlib
+seaborn
+
+# Utility
+tqdm
+requests
+
+# Notebook support (optional)
+notebook
