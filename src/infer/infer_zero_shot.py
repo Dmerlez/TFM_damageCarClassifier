@@ -36,7 +36,7 @@ def main():
         class_path = os.path.join(val_dir, class_folder)
         if not os.path.isdir(class_path):
             continue
-
+ 
         for img_name in os.listdir(class_path):
             if not img_name.lower().endswith(".jpg"):
                 continue
