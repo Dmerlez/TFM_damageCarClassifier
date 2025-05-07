@@ -1,33 +1,38 @@
+# src/eval/eval_zero_shot.py
+
 import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-from src.infer.infer_zero_shot import classify_image
 from sklearn.metrics import classification_report, accuracy_score
-from src.config import CLASSES
+from src.infer.infer_zero_shot import classify_image
+from src.config import CLASS_MAPPING, EVAL_CLASSES
 
-VAL_DIR = "data/val"
+VAL_DIR = "data/all"
 
-y_true = []
-y_pred = []
+def main():
+    y_true = []
+    y_pred = []
 
-# Traverse class folders
-for class_folder in os.listdir(VAL_DIR):
-    class_path = os.path.join(VAL_DIR, class_folder)
-    if not os.path.isdir(class_path):
-        continue
-
-    for img_name in os.listdir(class_path):
-        if not img_name.lower().endswith(".jpg"):
+    for class_folder in os.listdir(VAL_DIR):
+        class_path = os.path.join(VAL_DIR, class_folder)
+        if not os.path.isdir(class_path):
             continue
 
-        img_path = os.path.join(class_path, img_name)
-        try:
-            pred_label, _ = classify_image(img_path)
-            y_pred.append(pred_label)
-            y_true.append(class_folder)  # Folder = ground truth label
-        except Exception as e:
-            print(f"Error processing {img_path}: {e}")
+        for img_name in os.listdir(class_path):
+            if not img_name.lower().endswith(".jpg"):
+                continue
 
-# Evaluate predictions
-print(f"\nAccuracy: {accuracy_score(y_true, y_pred):.4f}\n")
-print(classification_report(y_true, y_pred, labels=CLASSES))
+            img_path = os.path.join(class_path, img_name)
+            try:
+                pred_prompt, _ = classify_image(img_path)
+                pred_label = CLASS_MAPPING.get(pred_prompt, "Indeterminado")
+
+                y_pred.append(pred_label)
+                y_true.append(class_folder)  # La carpeta representa la clase real
+
+            except Exception as e:
+                print(f"Error al procesar {img_path}: {e}")
+
+    print(f"\nAccuracy: {accuracy_score(y_true, y_pred):.4f}\n")
+    print(classification_report(y_true, y_pred, labels=EVAL_CLASSES, zero_division=0))
+
+if __name__ == "__main__":
+    main()
