@@ -1,5 +1,5 @@
-from src.eval import eval_zero_shot
-from src.infer import infer_zero_shot 
+from eval import eval_zero_shot_clip
+from infer import infer_zero_shot_clip 
 
-eval_zero_shot.main()
+eval_zero_shot_clip.main()
 #infer_zero_shot.main()
