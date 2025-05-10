@@ -1,55 +1,68 @@
 # src/infer/infer_zero_shot.py
-import os
+
 from transformers import CLIPProcessor, CLIPModel
 from PIL import Image
 import torch
-from src.config import CLASSES_ZERO_SHOT
+import os
+from src.config import PROMPTS_BY_CLASS
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
- 
+
+# Modelo y procesador
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32", use_fast=False)
 model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
 
-def classify_image(img_path, threshold=0.1):
+# Generar lista de prompts y su clase asociada
+ALL_PROMPTS = []
+PROMPT_TO_CLASS = []
+
+for class_name, prompts in PROMPTS_BY_CLASS.items():
+    for prompt in prompts:
+        ALL_PROMPTS.append(prompt)
+        PROMPT_TO_CLASS.append(class_name)
+
+def classify_image(img_path):
     try:
         image = Image.open(img_path).convert("RGB")
     except Exception as e:
-        raise RuntimeError(f"Error al cargar la imagen {img_path}: {e}")
+        raise RuntimeError(f"Error loading image {img_path}: {e}")
 
-    inputs = processor(text=CLASSES_ZERO_SHOT, images=image, return_tensors="pt", padding=True).to(device)
-    outputs = model(**inputs)
-    logits_per_image = outputs.logits_per_image
-    probs = logits_per_image.softmax(dim=1).squeeze()
+    # Tokenizar imagen y texto
+    inputs = processor(text=ALL_PROMPTS, images=image, return_tensors="pt", padding=True).to(device)
+    with torch.no_grad():
+        outputs = model(**inputs)
+        logits_per_image = outputs.logits_per_image
+        probs = logits_per_image.softmax(dim=-1).squeeze(0).cpu()
 
-    pred_index = torch.argmax(probs).item()
-    max_prob = probs[pred_index].item()
+    # Agregar probabilidades por clase
+    class_scores = {}
+    for prob, class_name in zip(probs, PROMPT_TO_CLASS):
+        class_scores[class_name] = class_scores.get(class_name, 0.0) + prob.item()
 
-    if max_prob < threshold:
-        return "indeterminado", probs.tolist()
-
-    return CLASSES_ZERO_SHOT[pred_index], probs.tolist()
+    # Elegir la clase con mayor score acumulado
+    pred_class = max(class_scores, key=class_scores.get)
+    return pred_class, class_scores
 
 def main():
-    val_dir = "data/val"
+    folder_path = "data/val/Intacto/"
+    true_class = os.path.basename(os.path.normpath(folder_path))  # Extrae "Intacto"
 
-    for class_folder in os.listdir(val_dir):
-        class_path = os.path.join(val_dir, class_folder)
-        if not os.path.isdir(class_path):
+    for img_name in os.listdir(folder_path):
+        if not img_name.lower().endswith(".jpg"):
             continue
- 
-        for img_name in os.listdir(class_path):
-            if not img_name.lower().endswith(".jpg"):
-                continue
 
-            img_path = os.path.join(class_path, img_name)
-            try:
-                pred_label, probs = classify_image(img_path)
-                print(f"\nImagen: {img_path}")
-                print(f"Clase real: {class_folder}")
-                print(f"Predicción: {pred_label}")
-                print(f"Probabilidades: {probs}")
-            except Exception as e:
-                print(f"Error al procesar {img_path}: {e}")
+        img_path = os.path.join(folder_path, img_name)
+        try:
+            pred_label, probs = classify_image(img_path)
+            print(f"\nImagen: {img_path}")
+            print(f"Clase real: {true_class}")
+            print(f"Predicción: {pred_label}")
+            print(f"Top 3 scores:")
+            for class_name, score in sorted(probs.items(), key=lambda x: x[1], reverse=True)[:3]:
+                print(f"  {class_name}: {score:.4f}")
+        except Exception as e:
+            print(f"Error al procesar {img_path}: {e}")
+
 
 if __name__ == "__main__":
     main()

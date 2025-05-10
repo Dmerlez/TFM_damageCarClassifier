@@ -3,7 +3,7 @@
 import os
 from sklearn.metrics import classification_report, accuracy_score
 from src.infer.infer_zero_shot import classify_image
-from src.config import CLASS_MAPPING, EVAL_CLASSES
+from src.config import EVAL_CLASSES
 
 VAL_DIR = "data/all"
 
@@ -22,11 +22,12 @@ def main():
 
             img_path = os.path.join(class_path, img_name)
             try:
-                pred_prompt, _ = classify_image(img_path)
-                pred_label = CLASS_MAPPING.get(pred_prompt, "Indeterminado")
-
+                pred_label, scores = classify_image(img_path)
                 y_pred.append(pred_label)
-                y_true.append(class_folder)  # La carpeta representa la clase real
+                y_true.append(class_folder)  # Usa nombre exacto de carpeta
+
+                # Debug opcional:
+                # print(f"GT: {class_folder} | Pred: {pred_label} | Top score: {max(scores.items(), key=lambda x: x[1])}")
 
             except Exception as e:
                 print(f"Error al procesar {img_path}: {e}")
