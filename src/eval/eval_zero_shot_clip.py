@@ -2,7 +2,7 @@
 
 import os
 from sklearn.metrics import classification_report, accuracy_score
-from infer.infer_zero_shot_clip import classify_image
+from src.infer.infer_zero_shot_clip import classify_image
 from src.config import EVAL_CLASSES
 
 VAL_DIR = "data/all"
