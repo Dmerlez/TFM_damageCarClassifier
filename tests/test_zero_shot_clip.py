@@ -6,7 +6,7 @@ from sklearn.metrics import classification_report, accuracy_score
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.infer.infer_zero_shot import classify_image
+from infer.infer_zero_shot_clip import classify_image
 from src.config import CLASSES
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
