@@ -1,5 +1,5 @@
 import os
-from src.infer.infer_chatgpt import classify_image_chatgpt
+from src.backend.infer.infer_chatgpt import classify_image_chatgpt
 from src.config import CLASSES
 from sklearn.metrics import classification_report, accuracy_score
 
