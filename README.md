@@ -12,7 +12,56 @@ This project compares three approaches for vehicle damage classification based o
 
 3. **Zero-Shot Classification** – Uses open models (e.g., CLIP) to classify images without training.
 
+## Quick Start
+
+Follow these steps to get the project up and running locally:
+
+---
+
+### Start the Backend
+
+1. Navigate to the backend directory:
+
+   ```bash
+   cd src/backend
+   ```
+2. (Optional) Create and activate a virtual environment:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+3. Run the API server:
+   ```bash
+   uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+   ```
+This will launch the FastAPI backend at: http://localhost:8000
+
+### Start the Frontend
+
+### Install npm
+
+**macOS**
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install node
+```
+**Windows**
+
+Download and install Node.js (includes npm)
+https://nodejs.org
+
+Then: 
+   ```bash
+    cd frontend
+    npm install (only once)
+    npm start
+   ```
+This will launch the React frontend at: http://localhost:3000
+
+
 ## Project Structure
+## TO DO: Actualize this chart!!!
 
 <pre lang="markdown">
 TFM_damageCarClassifier/

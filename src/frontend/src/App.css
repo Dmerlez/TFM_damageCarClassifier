@@ -1,0 +1,12 @@
+.App {
+  background: url("./background.jpg");
+  background-size: cover;
+  display: flex;
+}
+
+.pure-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
