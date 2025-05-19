@@ -24,22 +24,33 @@ CLASSES = [
 # Prompts enriquecidos por clase para Zero-Shot
 PROMPTS_BY_CLASS = {
     "Abolladuras": [
-        "A car with a single pronounced dent on the side door",
-        "A vehicle exhibiting a noticeable dent near the front fender",
-        "A car with a deep dent above the wheel arch",
-        "A sedan displaying a small but visible dent on the rear quarter panel",
-        "An automobile with a shallow dent on the passenger door",
-        "A vehicle showing multiple small dents on the door surface",
-        "A car with a large depression in the metal near the door handle"
+        "A car with a large dent on the front side panel",
+        "A gray vehicle with visible dents near the wheel arch",
+        "A car with a shallow but wide dent on the driver-side door",
+        "A front bumper with a significant depression due to impact",
+        "A vehicle showing minor collision damage with bent panels",
+        "A car with a slightly deformed hood after a front-end hit",
+        "A side door displaying a visible dent with surrounding paint intact",
+        "A compact car with localized denting above the front wheel",
+        "A damaged vehicle with a concave shape on the metallic body",
+        "A car that suffered a soft frontal collision, creating visible dents"
     ],
     "Intacto": [
-        "A pristine vehicle with absolutely no visible dents or scratches",
-        "A showroom-condition car without any signs of wear or damage",
-        "A well-maintained automobile with flawless paint and bodywork",
-        "A perfect car exterior free of blemishes or imperfections",
-        "A car in mint condition with no dents, scratches, or paint chips",
-        "An undamaged vehicle appearing straight from the factory",
-        "A clean, untouched car body with smooth, glossy finish"
+        "A clean car with no visible damage or scratches.",
+        "A well-maintained vehicle with a smooth and undamaged body.",
+        "A car exterior that shows no dents, scratches, or imperfections.",
+        "A spotless automobile parked with no signs of collision or damage.",
+        "A silver sedan in perfect condition with no signs of wear or impact.",
+        "A black SUV with clean paint and no body damage.",
+        "A front view of a pristine vehicle with no broken or deformed parts.",
+        "A rear view of a car showing no signs of any impact or damage.",
+        "A new-looking vehicle with all panels intact and unmarked.",
+        "A side view of a car with a flawless body and no cosmetic issues.",
+        "A showroom-quality vehicle with a fully intact exterior.",
+        "A close-up of a clean car door without scratches or dents.",
+        "A vehicle with no structural or cosmetic damage, parked in daylight.",
+        "An undamaged sedan with even paint and no visible flaws.",
+        "A car that looks recently washed and completely intact."
     ],
     "Rallones": [
         "A car with scratches on the paint",
