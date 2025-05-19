@@ -3,12 +3,15 @@ import sys
 import shutil
 import json
 import asyncio
+from collections import OrderedDict
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
+# Añadir "src/" al PYTHONPATH
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-
+# Importar desde backend.infer
+from backend.infer.infer_zero_shot_clip import classify_image
 
 # Initialize FastAPI
 app = FastAPI()
@@ -21,10 +24,11 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-
+ 
 # Define upload folder
-UPLOAD_FOLDER = "../data/uploads"
+UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/uploads"))
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 
 async def get_mapping(task_id: str, file_path: str):
     """
@@ -35,18 +39,33 @@ async def get_mapping(task_id: str, file_path: str):
 
     try:
        #TO DO: PUT YOU FUNCTION HERE
+        # Realizar inferencia Zero-Shot CLIP
+        pred_label, class_scores = classify_image(file_path)
+
+        # Top 3 clases por score
+        # Top 3
+        top3 = sorted(class_scores.items(), key=lambda x: x[1], reverse=True)[:3]
+        top3_dict = OrderedDict((label, round(score, 4)) for label, score in top3)
+
+        # Top 1
+        label_top1, score_top1 = top3[0]  # o usar sorted(...)[0]
+
         response = {
-           "task_id": task_id,
-           "status": "Success",
-           "response": {
-               "result_chat_gpt": "class 1",
-               "result_zero_shot": "class 2",
-               "result_yolo": "class 3",
-               "final_result": "class 3",
-               "comments": "Prediction from YOLO aligns with visible structural patterns and severity, thus selected as final result. "
-                           "ChatGPT suggested 'class 1' based on visual cues, while zero-shot was closer but less confident."
-           },
+            "task_id": task_id,
+            "status": "Success",
+            "response": {
+                "result_zero_shot": label_top1,
+                "top1_score": round(score_top1, 4),
+                "top3_scores": top3_dict,
+                "final_result": label_top1,
+                "comments": "Top prediction based on Zero-Shot CLIP model."
+            },
         }
+
+        response_file = os.path.join(UPLOAD_FOLDER, task_id, "response.json")
+
+# 👇🏽 Aquí agregas el print
+        print(f"📁 Guardando response en: {response_file}")
 
         print(f"Processing succeeded for task {task_id}")
 

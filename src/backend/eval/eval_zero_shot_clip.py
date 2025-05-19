@@ -1,5 +1,4 @@
 # src/eval/eval_zero_shot.py
-
 import os
 from sklearn.metrics import classification_report, accuracy_score
 from src.backend.infer.infer_zero_shot_clip import classify_image

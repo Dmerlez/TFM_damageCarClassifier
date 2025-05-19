@@ -15,7 +15,7 @@ model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
 # Generar lista de prompts y su clase asociada
 ALL_PROMPTS = []
 PROMPT_TO_CLASS = []
-
+ 
 for class_name, prompts in PROMPTS_BY_CLASS.items():
     for prompt in prompts:
         ALL_PROMPTS.append(prompt)

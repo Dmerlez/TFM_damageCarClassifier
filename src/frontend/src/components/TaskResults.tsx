@@ -176,7 +176,18 @@ const renderStructuredTaskResults = (
       {sections.map((section) => (
         <div className="section" key={section}>
           <h3 className="title">{section}</h3>
-          <p className="value">{taskResult[section]}</p>
+
+          {typeof taskResult[section] === "object" && taskResult[section] !== null ? (
+            <ul className="value">
+              {Object.entries(taskResult[section]).map(([key, val]) => (
+                <li key={key}>
+                <strong>{`${key}: ${val}`}</strong>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="value">{taskResult[section]}</p>
+          )}
         </div>
       ))}
     </div>
@@ -197,7 +208,7 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => (
             <div className="column middle">
               <input
                 type="text"
-                value="https://www.somia.com/sabentis/onboarding/assist"
+                value="Vehiclar"
               />
             </div>
             <div className="column right">
