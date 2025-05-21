@@ -1,11 +1,12 @@
-# src/eval/eval_zero_shot.py
 
 import os
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, ConfusionMatrixDisplay
+from collections import Counter
+import matplotlib.pyplot as plt
 from src.backend.infer.infer_zero_shot_clip import classify_image
 from src.config import EVAL_CLASSES
 
-VAL_DIR = "data/all"
+VAL_DIR = "/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/data/all"
 
 def main():
     y_true = []
@@ -24,16 +25,19 @@ def main():
             try:
                 pred_label, scores = classify_image(img_path)
                 y_pred.append(pred_label)
-                y_true.append(class_folder)  # Usa nombre exacto de carpeta
-
-                # Debug opcional:
-                # print(f"GT: {class_folder} | Pred: {pred_label} | Top score: {max(scores.items(), key=lambda x: x[1])}")
-
+                y_true.append(class_folder)
             except Exception as e:
                 print(f"Error al procesar {img_path}: {e}")
 
     print(f"\nAccuracy: {accuracy_score(y_true, y_pred):.4f}\n")
     print(classification_report(y_true, y_pred, labels=EVAL_CLASSES, zero_division=0))
 
+    # Confusiones más comunes
+    print("\nTop confusiones:")
+    errors = [(t, p) for t, p in zip(y_true, y_pred) if t != p]
+    for (true_label, pred_label), count in Counter(errors).most_common(10):
+        print(f"{true_label} → {pred_label}: {count} veces")
+
+        
 if __name__ == "__main__":
     main()

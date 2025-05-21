@@ -15,7 +15,7 @@ model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
 # Generar lista de prompts y su clase asociada
 ALL_PROMPTS = []
 PROMPT_TO_CLASS = []
-
+ 
 for class_name, prompts in PROMPTS_BY_CLASS.items():
     for prompt in prompts:
         ALL_PROMPTS.append(prompt)
@@ -44,7 +44,7 @@ def classify_image(img_path):
     return pred_class, class_scores
 
 def main():
-    folder_path = "data/val/Intacto/"
+    folder_path = "/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/data/val/Abolladuras/"
     true_class = os.path.basename(os.path.normpath(folder_path))  # Extrae "Intacto"
 
     for img_name in os.listdir(folder_path):

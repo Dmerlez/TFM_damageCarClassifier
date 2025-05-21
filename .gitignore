@@ -26,3 +26,8 @@ checkpoints/
 # System files
 .DS_Store
 Thumbs.db
+
+# Node modules
+node_modules/
+
+

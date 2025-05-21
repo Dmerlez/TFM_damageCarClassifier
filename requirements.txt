@@ -8,6 +8,7 @@ numpy
 # Image processing
 Pillow
 opencv-python
+openai
 
 # Plotting & analysis
 matplotlib
@@ -21,5 +22,7 @@ python-dotenv
 # Notebook support (optional)
 notebook
 
-# Addicional
-openai
+# Backend
+fastapi
+uvicorn
+python-multipart
