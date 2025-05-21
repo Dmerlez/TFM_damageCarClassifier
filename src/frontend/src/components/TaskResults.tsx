@@ -1,239 +1,270 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import styled from "styled-components";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { FaFilePdf } from "react-icons/fa";
+const FaFilePdfIcon = FaFilePdf as unknown as React.FC<{ size?: number }>;
 
-type TaskResultsProps = any; // { taskResult: unknown }; PS: fucking TS
+type TaskResultsProps = {
+  taskResult: { [key: string]: any };
+  image: File;
+};
 
 const TaskResultsWrapper = styled.div`
-  width: inherit;
+  width: 100%;
   position: relative;
+  font-family: 'Inter', sans-serif;
+  padding: 40px 20px;
 
   .laptop {
-    -webkit-transform-origin: 0 0;
-    transform-origin: 0 0;
-    -webkit-transform: scale(0.8) translate(-50%);
-    transform: scale(0.8) translate(-50%);
-    left: 50%;
-    position: absolute;
-    width: 100%;
-    height: 75vh;
-    border-radius: 6px;
-    border-style: solid;
-    border-color: rgb(70, 70, 70);
-    border-width: 24px 24px 60px;
-    background-color: rgb(70, 70, 70);
+    position: relative;
+    max-width: 900px;
+    margin: auto;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
   }
 
-  /* The keyboard of the laptop */
-  .laptop:after {
-    content: "";
-    display: block;
-    position: absolute;
-    width: calc(100% + 220px);
-    height: 60px;
-    margin: 60px 0 0 -110px;
-    background: rgb(70, 70, 70);
-    border-radius: 6px;
-    border: solid rgb(60, 60, 60);
-    border-width: 5px 0px 0px;
-    box-shadow: 0px -5px 10px rgb(60, 60, 60);
+  .header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #e5e7eb;
+    padding: 10px 20px;
+    border-radius: 8px 8px 0 0;
   }
 
-  /* The top of the keyboard */
-  .laptop:before {
-    content: "";
-    display: block;
-    position: absolute;
-    width: 250px;
-    height: 30px;
-    bottom: -95px;
-    left: 50%;
-    -webkit-transform: translate(-50%);
-    transform: translate(-50%);
-    background: gray;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    z-index: 1;
+  .dot {
+    height: 12px;
+    width: 12px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
   }
 
-  /* The screen (or content) of the device */
-  .laptop .content {
+  .content {
     background-color: white;
-    height: 100%;
+    height: 70vh;
     width: 100%;
-    border-radius: 10px;
+    border-radius: 0 0 10px 10px;
     font-size: 16px;
     box-sizing: border-box;
-    overflow: scroll;
-
-    .container {
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
-    }
-
-    .header {
-      position: sticky;
-      top: 0;
-    }
-
-    /* Container for columns and the top "toolbar" */
-    .row {
-      padding: 10px;
-      background: #f1f1f1;
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
-    }
-
-    /* Create three unequal columns that floats next to each other */
-    .column {
-      float: left;
-    }
-
-    .left {
-      width: 15%;
-    }
-
-    .right {
-      width: 10%;
-    }
-
-    .middle {
-      width: 75%;
-    }
-
-    .row:after {
-      content: "";
-      display: table;
-      clear: both;
-    }
-
-    .dot {
-      margin-top: 5px;
-      margin-right: 5px;
-      height: 12px;
-      width: 12px;
-      background-color: #bbb;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      border-radius: 3px;
-      border: none;
-      background-color: white;
-      margin-top: -8px;
-      height: 25px;
-      color: #666;
-      padding: 5px;
-    }
-
-    .bar {
-      width: 17px;
-      height: 3px;
-      background-color: #aaa;
-      margin: 3px 0;
-      display: block;
-    }
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 20px;
   }
 
   .content-inner {
-    padding: 25px;
-    font-size: 22px;
+    padding: 20px 0 40px;
+  }
 
-    .uploaded-image {
-      display: flex;
-      width: 50%;
-      margin: auto;
-      box-shadow: 0px 0px 15px lightgray;
-    }
+  .uploaded-image-wrapper {
+    max-width: 600px;
+    margin: 20px auto;
+    background: rgb(0, 0, 0);
+    padding: 2px;
+    border-radius: 16px;
+    border:1px solid;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    .task-result {
-      .section {
-        .title {
-          text-transform: capitalize;
-        }
-        .value {
-          margin-left: 20px;
-        }
-      }
-    }
+  .uploaded-image {
+    width: 100%;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid;
+  }
+
+  .result-grid {
+    border:1px solid;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    row-gap: 20px;
+    column-gap: 20px;
+    max-width: 560px;
+    margin: 20px auto;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .result-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 16px;
+    text-align: right;
+  }
+
+  .result-value {
+    font-weight: 500;
+    color: #111827;
+    font-size: 16px;
+  }
+
+  .download-button {
+    background: white;
+    color: #e11d48;
+    border: 1px solid #e11d48;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .download-button:hover {
+    background: #e11d48;
+    color: white;
   }
 `;
 
-const HEADER_TEXT =
-  "Hemos analizado la imagen y obtenido los siguientes resultados: ";
+const HEADER_TEXT = "Imagen analizada:";
+const FOOTER_TEXT = "Si estás conforme con esta clasificación, presiona el botón “Confirmar”. Si detectas algún error ajusta la clase manualmente.";
 
-const FOOTER_TEXT =
-  "Si estás conforme con este classificación, presiona el botón “Confirmar”. Si detectas algún error ajusta la clase manualmente.";
+const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
+  const [showClone, setShowClone] = useState(false);
+  const cloneRef = useRef<HTMLDivElement>(null);
 
-const renderStructuredTaskResults = (
-  taskResult: TaskResultsProps
-): React.JSX.Element => {
-  const sections = Object.keys(taskResult);
+  const generatePDF = () => {
+    setShowClone(true);
+
+    setTimeout(() => {
+      const pdfElement = cloneRef.current;
+      if (!pdfElement) return;
+
+      html2canvas(pdfElement, { scale: 2, useCORS: true }).then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "pt", "a4");
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save("informe_vehiclar.pdf");
+        setShowClone(false);
+      });
+    }, 300);
+  };
 
   return (
-    <div className="task-result">
-      {sections.map((section) => (
-        <div className="section" key={section}>
-          <h3 className="title">{section}</h3>
-
-          {typeof taskResult[section] === "object" && taskResult[section] !== null ? (
-            <ul className="value">
-              {Object.entries(taskResult[section]).map(([key, val]) => (
-                <li key={key}>
-                <strong>{`${key}: ${val}`}</strong>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="value">{taskResult[section]}</p>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const TaskResults = ({ taskResult, image }: TaskResultsProps) => (
-  <TaskResultsWrapper>
-    <div className="laptop">
-      <div className="content">
-        <div className="container">
-          <div className="header row">
-            <div className="column left">
-              <span className="dot" style={{ background: "#ED594A" }}></span>
-              <span className="dot" style={{ background: "#FDD800" }}></span>
-              <span className="dot" style={{ background: "#5AC05A" }}></span>
-            </div>
-            <div className="column middle">
-              <input
-                type="text"
-                value="Vehiclar"
-              />
-            </div>
-            <div className="column right">
-              <div style={{ float: "right" }}>
-                <span className="bar"></span>
-                <span className="bar"></span>
-                <span className="bar"></span>
-              </div>
-            </div>
+    <TaskResultsWrapper>
+      <div className="laptop">
+        <div className="header-bar">
+          <div>
+            <span className="dot" style={{ background: "#ED594A" }}></span>
+            <span className="dot" style={{ background: "#FDD800" }}></span>
+            <span className="dot" style={{ background: "#5AC05A" }}></span>
           </div>
+          <center><input
+            type="text"
+            value="VEHICLAR"
+            readOnly
+            style={{ background: "transparent", border: "none", fontWeight: "600", fontSize: "14px" }}
+          />
+          </center>
+          <button
+            onClick={generatePDF}
+            className="download-button"
+            title="Descargar PDF"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+          >
+            <FaFilePdfIcon size={20} />
+          </button>
+        </div>
 
+        <div className="content">
           <div className="content-inner">
-            <p className="header-text">{HEADER_TEXT}</p>
-            <img
-              src={URL.createObjectURL(image)}
-              alt="uploaded-image"
-              className="uploaded-image"
-            />
-            {renderStructuredTaskResults(taskResult)}
-            <p className="footer-text">{FOOTER_TEXT}</p>
+            <h1 style={{ textAlign: "center", fontSize: "24px", fontWeight: 600, color: "#111827" }}>{HEADER_TEXT}</h1>
+            <div className="uploaded-image-wrapper">
+              <img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" />
+            </div>
+            <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados Zero-Shot CLIP Model</h1>
+            <div className="result-grid">
+              <div className="result-label">Label: </div>
+              <div className="result-value">{taskResult["Label"]}</div>
+
+              <div className="result-label">Probability: </div>
+              <div className="result-value">{taskResult.Probability}</div>
+
+              <div className="result-label">Top 3 scores: </div>
+              <div className="result-value">
+                {taskResult["Top 3 scores"] &&
+                  Object.entries(taskResult["Top 3 scores"]).map(([label, score]) => (
+                    <div key={label}>{label}: {(score as number * 100).toFixed(2)}%</div>
+                  ))}
+              </div>
+
+              <div className="result-label">Final result: </div>
+              <div className="result-value">{taskResult["Final result"]}</div>
+            </div> 
+
+            {!showClone && (
+              <p style={{ textAlign: "center", marginTop: "30px", color: "#6b7280" }}>
+                {FOOTER_TEXT}
+              </p>
+            )}
           </div>
         </div>
       </div>
-    </div>
-  </TaskResultsWrapper>
-);
+
+      {showClone && (
+        <div
+          ref={cloneRef}
+          style={{
+            position: "absolute",
+            top: "-10000px",
+            left: "-10000px",
+            width: "900px",
+            padding: "40px",
+            background: "#fff",
+            fontFamily: "Inter, sans-serif",
+            zIndex: -1,
+          }}
+        >
+          <h1 style={{ textAlign: "center", fontSize: "24px", fontWeight: 600 }}>{HEADER_TEXT}</h1>
+          <div style={{ maxWidth: "600px", margin: "40px auto", borderRadius: "12px" }}>
+          <img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" />
+          </div>
+          <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados Zero-Shot CLIP Model</h1>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 2fr",
+              gap: "16px",
+              maxWidth: "570px",
+              margin: "auto",
+              padding: "24px",
+              background: "#f9fafb",
+              borderRadius: "12px",
+              border:"1px solid",
+            }}
+          >
+            
+            <div className="result-label">Label: </div>
+              <div className="result-value">{taskResult["Label"]}</div>
+
+              <div className="result-label">Probability: </div>
+              <div className="result-value">{taskResult.Probability}</div>
+
+              <div className="result-label">Top 3 scores: </div>
+              <div className="result-value">
+                {taskResult["Top 3 scores"] &&
+                  Object.entries(taskResult["Top 3 scores"]).map(([label, score]) => (
+                    <div key={label}>{label}: {(score as number * 100).toFixed(2)}%</div>
+                  ))}
+              </div>
+
+              <div className="result-label">Final result: </div>
+              <div className="result-value">{taskResult["Final result"]}</div>
+          </div>
+        </div>
+      )}
+    </TaskResultsWrapper>
+  );
+};
 
 export default TaskResults;

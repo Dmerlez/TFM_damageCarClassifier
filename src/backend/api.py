@@ -54,11 +54,11 @@ async def get_mapping(task_id: str, file_path: str):
             "task_id": task_id,
             "status": "Success",
             "response": {
-                "result_zero_shot": label_top1,
-                "top1_score": round(score_top1, 4),
-                "top3_scores": top3_dict,
-                "final_result": label_top1,
-                "comments": "Top prediction based on Zero-Shot CLIP model."
+                "Label": label_top1,
+                "Probability": f'{round(score_top1*100, 2)}%', 
+                "Top 3 scores": top3_dict,
+                "Final result": label_top1,
+                "Comments": "Prediction based on Zero-Shot Model."
             },
         }
 

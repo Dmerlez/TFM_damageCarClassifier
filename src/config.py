@@ -55,7 +55,7 @@ PROMPTS_BY_CLASS = {
     "Rallones": [
         "A car with scratches on the paint",
         "A vehicle with visible surface scratches",
-        "A car with minor scratches on the bumper or doors"
+        "A car with minor scratches on the bumper or doors"        
     ],
     "Siniestro": [
         "A heavily damaged car with crushed structural components",

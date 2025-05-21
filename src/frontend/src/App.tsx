@@ -65,7 +65,7 @@ function App() {
             text={ROBOT_TEXT_FINAL}
             actions={<ActionButtons />}
           />
-          <TaskResults taskResult={taskResponse} image={uploadedImage} />
+          <TaskResults taskResult={taskResponse} image={uploadedImage!} />
         </div>
       );
     }
