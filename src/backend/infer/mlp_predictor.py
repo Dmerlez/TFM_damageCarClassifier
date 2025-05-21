@@ -10,8 +10,8 @@ clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 clip_model.eval()
 
 # Cargar modelo entrenado y scaler
-mlp = joblib.load("MLPClassifier_clip_model.pkl")
-scaler = joblib.load("MLPClassifier_scaler.pkl")
+mlp = joblib.load("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/MLPClassifier_clip_model.pkl")
+scaler = joblib.load("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/MLPClassifier_scaler.pkl")
 
 # Etiquetas que usaste durante el entrenamiento
 CLASSES = ["Abolladuras", "Intacto", "Rallones", "Siniestro"]

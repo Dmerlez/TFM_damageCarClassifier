@@ -61,7 +61,7 @@ const TaskResultsWrapper = styled.div`
   }
 
   .uploaded-image-wrapper {
-    max-width: 600px;
+    max-width: 500px;
     margin: 20px auto;
     background: rgb(0, 0, 0);
     padding: 2px;
@@ -86,7 +86,7 @@ const TaskResultsWrapper = styled.div`
     grid-template-columns: 1fr 2fr;
     row-gap: 20px;
     column-gap: 20px;
-    max-width: 560px;
+    max-width: 450px;
     margin: 20px auto;
     padding: 24px;
     background: #ffffff;
@@ -182,7 +182,7 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
             <div className="uploaded-image-wrapper">
               <img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" />
             </div>
-            <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados Zero-Shot CLIP Model</h1>
+            <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados CLIP + MLPClassifier</h1>
             <div className="result-grid">
               <div className="result-label">Label: </div>
               <div className="result-value">{taskResult["Label"]}</div>
@@ -229,7 +229,7 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
           <div style={{ maxWidth: "600px", margin: "40px auto", borderRadius: "12px" }}>
           <img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" />
           </div>
-          <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados Zero-Shot CLIP Model</h1>
+          <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados CLIP + MLPClassifier</h1>
           <div
             style={{
               display: "grid",

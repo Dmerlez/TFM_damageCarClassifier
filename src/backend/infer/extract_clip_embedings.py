@@ -38,6 +38,6 @@ for class_name in sorted(os.listdir(DATASET_DIR)):
             print(f"Error en {img_path}: {e}")
 
 # Guardar
-np.save("X_clip.npy", np.array(X))
-np.save("y_labels.npy", np.array(y))
+np.save("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/X_clip.npy", np.array(X))
+np.save("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/y_labels.npy", np.array(y))
 print("✅ Embeddings guardados como 'X_clip.npy' y 'y_labels.npy'")

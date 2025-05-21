@@ -58,7 +58,7 @@ async def get_mapping(task_id: str, file_path: str):
                 "Probability": f"{round(score_top1 * 100, 2)}%",
                 "Top 3 scores": {label: round(prob * 1, 2) for label, prob in top3_dict.items()},
                 "Final result": pred_label,
-                "Comments": "Prediction based on CLIP + MLPClassifier model."
+                "Comments": "Prediction based on CLIP + MLPClassifier."
             },
         }
 
