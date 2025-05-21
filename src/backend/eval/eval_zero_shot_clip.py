@@ -23,7 +23,7 @@ def main():
 
             img_path = os.path.join(class_path, img_name)
             try:
-                pred_label, scores = classify_image(img_path, temperature=0.5, min_score_threshold=0.0)
+                pred_label, scores = classify_image(img_path)
                 y_pred.append(pred_label)
                 y_true.append(class_folder)
             except Exception as e:

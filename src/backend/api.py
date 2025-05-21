@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Importar desde backend.infer
-from backend.infer.infer_zero_shot_clip import classify_image
+from backend.infer.mlp_predictor import predict_with_mlp
 
 # Initialize FastAPI
 app = FastAPI()
@@ -40,25 +40,25 @@ async def get_mapping(task_id: str, file_path: str):
     try:
        #TO DO: PUT YOU FUNCTION HERE
         # Realizar inferencia Zero-Shot CLIP
-        pred_label, class_scores = classify_image(file_path)
+        pred_label, score_top1, top3_dict = predict_with_mlp(file_path)
 
         # Top 3 clases por score
         # Top 3
-        top3 = sorted(class_scores.items(), key=lambda x: x[1], reverse=True)[:3]
-        top3_dict = OrderedDict((label, round(score, 4)) for label, score in top3)
+        #top3 = sorted(class_scores.items(), key=lambda x: x[1], reverse=True)[:3]
+        #top3_dict = OrderedDict((label, round(score, 4)) for label, score in top3)
 
         # Top 1
-        label_top1, score_top1 = top3[0]  # o usar sorted(...)[0]
+        #label_top1, score_top1 = top3[0]  # o usar sorted(...)[0]
 
         response = {
             "task_id": task_id,
             "status": "Success",
             "response": {
-                "Label": label_top1,
-                "Probability": f'{round(score_top1*100, 2)}%', 
-                "Top 3 scores": top3_dict,
-                "Final result": label_top1,
-                "Comments": "Prediction based on Zero-Shot Model."
+                "Label": pred_label,
+                "Probability": f"{round(score_top1 * 100, 2)}%",
+                "Top 3 scores": {label: round(prob * 1, 2) for label, prob in top3_dict.items()},
+                "Final result": pred_label,
+                "Comments": "Prediction based on CLIP + MLPClassifier model."
             },
         }
 
