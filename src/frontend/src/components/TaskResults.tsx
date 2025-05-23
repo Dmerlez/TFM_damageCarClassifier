@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -19,7 +19,7 @@ const TaskResultsWrapper = styled.div`
   
   .laptop {
     position: relative;
-    max-width: 900px;
+    max-width: 1300px;
     margin: auto;
     background: #ffffff;
     border-radius: 16px;
@@ -63,7 +63,7 @@ const TaskResultsWrapper = styled.div`
   }
 
   .uploaded-image-wrapper {
-    max-width: 500px;
+    max-width: 900px;
     margin: 20px auto;
     background: rgb(0, 0, 0);
     padding: 2px;
@@ -81,6 +81,7 @@ const TaskResultsWrapper = styled.div`
     object-fit: cover;
     border: 1px solid;
   }
+    
 
   .result-grid {
     border:1px solid;
@@ -88,7 +89,7 @@ const TaskResultsWrapper = styled.div`
     grid-template-columns: 1fr 2fr;
     row-gap: 20px;
     column-gap: 20px;
-    max-width: 450px;
+    max-width: 850px;
     margin: 20px auto;
     padding: 24px;
     background: #ffffff;
@@ -125,13 +126,69 @@ const TaskResultsWrapper = styled.div`
   }
 `;
 
-const HEADER_TEXT = "Imagen";
+const HEADER_TEXT = "IMAGEN";
 const FOOTER_TEXT = "Si estás conforme con esta clasificación, presiona el botón “Confirmar”. Si detectas algún error ajusta la clase manualmente.";
+const now = new Date();
+const fecha = now.toLocaleDateString("es-ES"); // "23/05/2025"
+const hora = now.toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit' }); // "16:42"
+
+const clasificadoEn = `${hora} - ${fecha}`;
+
+const ZoomImage = ({ src }: { src: string }) => {
+  const [bgPosition, setBgPosition] = useState("center");
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.pageX - left) / width) * 100;
+    const y = ((e.pageY - top) / height) * 100;
+    setBgPosition(`${x}% ${y}%`);
+    setIsZoomed(true);
+  };
+
+  const handleMouseLeave = () => {
+    setBgPosition("center");
+    setIsZoomed(false);
+  };
+
+  return (
+    <div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        width: "100%",
+        height: "500px",
+        backgroundImage: `url(${src})`,
+        backgroundSize: isZoomed ? "200%" : "cover", // o "cover" si prefieres sin márgenes
+        backgroundPosition: bgPosition,
+        backgroundRepeat: "no-repeat",
+        backgroundColor: "#fff", // 👈 Esto elimina el negro
+        borderRadius: "12px",
+        cursor: "zoom-in",
+        border: "1px solid #ccc",
+        transition: "background-size 0.3s ease, background-position 0.3s ease",
+      }}
+    />
+  );
+};
+
+
 
 const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
   const [showClone, setShowClone] = useState(false);
   const cloneRef = useRef<HTMLDivElement>(null);
 
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      setImageDimensions({ width: img.width, height: img.height });
+    };
+    img.src = URL.createObjectURL(image);
+  }, [image]);
+
+  const fileName = image.name;
+  const fileSizeMB = (image.size / 1024 / 1024).toFixed(2); 
   const generatePDF = () => {
     setShowClone(true);
 
@@ -181,36 +238,51 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
           <div className="content-inner">
             <h1 style={{ textAlign: "center", fontSize: "24px", fontWeight: 600, color: "#111827" }}>{HEADER_TEXT}</h1>
             <div className="uploaded-image-wrapper">
-              <img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" />
+              <ZoomImage src={URL.createObjectURL(image)} />
             </div>
-            <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados </h1>
+            <h1 style={{ textAlign:"center", fontSize: "24px" }}> <strong>RESULTADOS</strong> </h1>
             <div className="result-grid">
-              <div className="result-label">Etiqueta: </div>
+              <div className="result-label"><strong>Modelo:</strong></div>
+              <div className="result-value">{taskResult["Modelo"]}</div>
+              <div className="result-label"><strong>Etiqueta:</strong> </div>
               <div className="result-value">{taskResult["Etiqueta"]}</div>
 
-              <div className="result-label">Probabilidad: </div>
+              <div className="result-label"><strong>Probabilidad:</strong> </div>
               <div className="result-value">{taskResult.Probabilidad}</div>
 
-              <div className="result-label">Top 3 resultados: </div>
+              <div className="result-label"><strong>Top 3 resultados:</strong> </div>
               <div className="result-value">
                 {taskResult["Top 3 resultados"] &&
                   Object.entries(taskResult["Top 3 resultados"]).map(([etiqueta, score]) => (
                     <div key={etiqueta}>{etiqueta}: {(score as number * 100).toFixed(1)}%</div>
                   ))}
               </div>
-              <div className="result-label">Resultado final: </div>
-              <div className="result-value">{taskResult["Resultado final"]}</div>
-              <div className="result-label">Comentarios: </div>
+              <div className="result-label"><strong>Confianza del modelo:</strong></div>
+              <div className="result-value">{taskResult["Confianza del modelo"]}</div>
+              <div className="result-label"><strong>Nombre del archivo:</strong></div>
+              <div className="result-value">{fileName}</div>
+
+              <div className="result-label"><strong>Tamaño:</strong></div>
+              <div className="result-value">{fileSizeMB} MB</div>
+
+              <div className="result-label"><strong>Resolución:</strong></div>
+              <div className="result-value">
+                {imageDimensions.width} x {imageDimensions.height} px
+              </div>
+              <div className="result-label"><strong>Fecha y Hora:</strong> </div>
+              <div className="result-value">{clasificadoEn}</div>
+              <div className="result-label"><strong>Resumen:</strong> </div>
               <div
                 className="result-value"
-                dangerouslySetInnerHTML={{ __html: taskResult.Comentarios }}
+                dangerouslySetInnerHTML={{ __html: taskResult.Resumen }}
               />
+              
 
             </div> 
 
             {!showClone && (
-              <p style={{ textAlign: "center", marginTop: "30px", color: "black", fontWeight:"600" }}>
-                {FOOTER_TEXT}
+              <p style={{ textAlign: "center", marginTop: "30px", color: "black"}}>
+                Si estás conforme con esta clasificación, presiona el botón “<strong>Confirmar</strong>”. Si detectas algún error ajusta la clase manualmente.
               </p>
             )}
           </div>
@@ -235,7 +307,7 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
           <div style={{ maxWidth: "600px", margin: "40px auto", borderRadius: "12px" }}>
           <img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" />
           </div>
-          <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados </h1>
+          <h1 style={{ textAlign:"center", fontSize: "24px" }}> RESULTADOS </h1>
           <div
             style={{
               display: "grid",
@@ -249,33 +321,47 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
               border:"1px solid",
             }}
           >
-            
-            <div className="result-label">Etiqueta: </div>
+            <div className="result-label"><strong>Modelo:</strong> </div>
+            <div className="result-value">{taskResult["Modelo"]}</div>
+            <div className="result-label"><strong>Etiqueta:</strong> </div>
               <div className="result-value">{taskResult["Etiqueta"]}</div>
 
-              <div className="result-label">Probabilidad: </div>
+              <div className="result-label"><strong>Probabilidad:</strong> </div>
               <div className="result-value">{taskResult.Probabilidad}</div>
 
-              <div className="result-label">Top 3 resultados: </div>
+              <div className="result-label"><strong>Top 3 resultados:</strong> </div>
               <div className="result-value">
                 {taskResult["Top 3 resultados"] &&
                   Object.entries(taskResult["Top 3 resultados"]).map(([label, score]) => (
                     <div key={label}>{label}: {(score as number * 100).toFixed(2)}%</div>
                   ))}
               </div>
+              <div className="result-label"><strong>Confianza del modelo:</strong></div>
+              <div className="result-value">{taskResult["Confianza del modelo"]}</div>
+              <div className="result-label"><strong>Nombre del archivo:</strong></div>
+              <div className="result-value">{fileName}</div>
 
-              <div className="result-label">Resultado final: </div>
-              <div className="result-value">{taskResult["Resultado final"]}</div>
-              <div className="result-label">Comentarios: </div>
+              <div className="result-label"><strong>Tamaño:</strong></div>
+              <div className="result-value">{fileSizeMB} MB</div>
+
+              <div className="result-label"><strong>Resolución:</strong></div>
+              <div className="result-value">
+                {imageDimensions.width} x {imageDimensions.height} px
+              </div>
+              <div className="result-label"><strong>Fecha y Hora:</strong> </div>
+              <div className="result-value">{clasificadoEn}</div>
+              <div className="result-label"><strong>Resumen:</strong> </div>
               <div
                 className="result-value"
-                dangerouslySetInnerHTML={{ __html: taskResult.Comentarios }}
+                dangerouslySetInnerHTML={{ __html: taskResult.Resumen }}
               />
+              
           </div>
         </div>
       )}
     </TaskResultsWrapper>
   );
 };
+
 
 export default TaskResults;
