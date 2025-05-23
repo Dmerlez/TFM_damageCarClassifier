@@ -3,6 +3,7 @@ import numpy as np
 import joblib
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
+from scipy.special import softmax
 
 # Cargar CLIP
 clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
@@ -27,6 +28,7 @@ def predict_with_mlp(image_path):
 
     # Escalar
     vector = scaler.transform(image_features.cpu().numpy())
+    
 
     # Predicción
     probs = mlp.predict_proba(vector)[0]

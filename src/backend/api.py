@@ -6,6 +6,7 @@ import asyncio
 from collections import OrderedDict
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
+import numpy as np
 
 # Añadir "src/" al PYTHONPATH
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -42,23 +43,22 @@ async def get_mapping(task_id: str, file_path: str):
         # Realizar inferencia Zero-Shot CLIP
         pred_label, score_top1, top3_dict = predict_with_mlp(file_path)
 
-        # Top 3 clases por score
-        # Top 3
-        #top3 = sorted(class_scores.items(), key=lambda x: x[1], reverse=True)[:3]
-        #top3_dict = OrderedDict((label, round(score, 4)) for label, score in top3)
+        top_class, score_top1, top3_scores = predict_with_mlp(file_path)
 
-        # Top 1
-        #label_top1, score_top1 = top3[0]  # o usar sorted(...)[0]
+        # Redondear resultados
+        score_top1 = round(float(score_top1) * 100, 2)
+        top3_scores = {label: round(float(prob), 2) for label, prob in top3_scores.items()}
 
+        # Crear response
         response = {
             "task_id": task_id,
             "status": "Success",
             "response": {
-                "Label": pred_label,
-                "Probability": f"{round(score_top1 * 100, 2)}%",
-                "Top 3 scores": {label: round(prob * 1, 2) for label, prob in top3_dict.items()},
-                "Final result": pred_label,
-                "Comments": "Prediction based on CLIP + MLPClassifier."
+                "Etiqueta": top_class,
+                "Probabilidad": f"{score_top1}%",
+                "Top 3 resultados": top3_scores,
+                "Resultado final": top_class,
+                "Comentarios": f"La etiqueta <strong>{top_class}</strong> fue la que obtuvo mejor resultado llegando a <strong>{score_top1}%</strong>"
             },
         }
 
@@ -74,8 +74,14 @@ async def get_mapping(task_id: str, file_path: str):
         response = {"task_id": task_id, "status": "Failed", "response": None}
 
     response_file = os.path.join(UPLOAD_FOLDER, task_id, "response.json")
+    def convert(o):
+        if isinstance(o, np.float32):
+            return float(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        raise TypeError(f"Object of type {type(o)} is not JSON serializable")
     with open(response_file, "w", encoding="utf-8") as f:
-        json.dump(response, f, indent=2)
+        json.dump(response, f, indent=2, default=convert)
 
 
 @app.post("/upload")

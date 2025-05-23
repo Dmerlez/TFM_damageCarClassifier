@@ -37,7 +37,9 @@ def classify_image(img_path):
     # Agregar probabilidades por clase
     class_scores = {}
     for prob, class_name in zip(probs, PROMPT_TO_CLASS):
+        # No multipliques aquí
         class_scores[class_name] = class_scores.get(class_name, 0.0) + prob.item()
+
 
     # Elegir la clase con mayor score acumulado
     pred_class = max(class_scores, key=class_scores.get)
