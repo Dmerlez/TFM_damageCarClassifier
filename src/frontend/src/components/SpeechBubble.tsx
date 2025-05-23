@@ -57,7 +57,7 @@ const BubbleWrapper = styled.div<BubbleWrapperProps>`
       case "top":
         return `calc(${$position.top} - 400px)`;
       case "bottom":
-        return `calc(${$position.top} + 350px)`;
+        return `calc(${$position.top} + 380px)`;
       case "left":
         return `calc(${$position.top} - 200px)`;
       case "right":

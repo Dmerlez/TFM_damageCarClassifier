@@ -14,7 +14,7 @@ const TaskResultsWrapper = styled.div`
   width: 100%;
   position: relative;
   font-family: 'Montserrat', sans-serif;
-  padding: 40px 20px;
+  padding-top: 40px;
 
   
   .laptop {
@@ -48,7 +48,7 @@ const TaskResultsWrapper = styled.div`
   .content {
     background-image: url("/background.png");
     background-size: contain;
-    height: 70vh;
+    height: 75vh;
     width: 100%;  
     border-radius: 0 0 10px 10px;
     font-size: 16px;
@@ -76,10 +76,12 @@ const TaskResultsWrapper = styled.div`
   }
 
   .uploaded-image {
-    width: 100%;
+    max-width: 100%;       /* nunca supera el ancho del contenedor */
+    height: auto;          /* mantiene proporción original */
     border-radius: 12px;
-    object-fit: cover;
+    object-fit: contain;   /* opcional: no recorta la imagen */
     border: 1px solid;
+    display: block;
   }
     
 
