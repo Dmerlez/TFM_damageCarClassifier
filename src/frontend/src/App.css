@@ -1,7 +1,11 @@
 .App {
-  background: url("./background.jpg");
+  background: url("./background.png");
   background-size: cover;
   display: flex;
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
 }
 
 .pure-canvas {
@@ -10,3 +14,4 @@
   left: 0;
   z-index: 1;
 }
+ 

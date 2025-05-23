@@ -14,11 +14,14 @@ type FileUploadProps = {
 const StyledWrapper = styled.div`
   display: block;
 
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(6, 3, 21, 0.6);
   border: 2px dashed gray;
   border-radius: 10px;
 
   z-index: 100;
+
+  /* 👇 Ajuste de posición vertical */
+  margin-top: -250px; /* Puedes probar también -40px o -50px según lo necesites */
 
   .dropzone {
     cursor: pointer;
@@ -55,6 +58,7 @@ const StyledWrapper = styled.div`
   }
 `;
 
+
 const FileUpload = ({ onSuccess }: FileUploadProps) => {
   const onDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -81,7 +85,7 @@ const FileUpload = ({ onSuccess }: FileUploadProps) => {
     <StyledWrapper>
       <div {...getRootProps()} className="dropzone">
         <input {...getInputProps()} />
-        <p className="upload-message">Drag & drop your file here, or click to select one</p>
+        <p className="upload-message">ARRASTRA O SUBE LA IMAGEN DE TU AUTO</p>
         <SlCloudUploadCasted className="upload-icon" />
       </div>
     </StyledWrapper>

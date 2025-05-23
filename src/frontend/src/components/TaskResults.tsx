@@ -13,9 +13,10 @@ type TaskResultsProps = {
 const TaskResultsWrapper = styled.div`
   width: 100%;
   position: relative;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   padding: 40px 20px;
 
+  
   .laptop {
     position: relative;
     max-width: 900px;
@@ -30,7 +31,7 @@ const TaskResultsWrapper = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #e5e7eb;
+    background-color: #D6E6FF;
     padding: 10px 20px;
     border-radius: 8px 8px 0 0;
   }
@@ -45,9 +46,10 @@ const TaskResultsWrapper = styled.div`
   }
 
   .content {
-    background-color: white;
+    background-image: url("/background.png");
+    background-size: contain;
     height: 70vh;
-    width: 100%;
+    width: 100%;  
     border-radius: 0 0 10px 10px;
     font-size: 16px;
     box-sizing: border-box;
@@ -123,7 +125,7 @@ const TaskResultsWrapper = styled.div`
   }
 `;
 
-const HEADER_TEXT = "Imagen analizada:";
+const HEADER_TEXT = "Imagen";
 const FOOTER_TEXT = "Si estás conforme con esta clasificación, presiona el botón “Confirmar”. Si detectas algún error ajusta la clase manualmente.";
 
 const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
@@ -159,13 +161,12 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
             <span className="dot" style={{ background: "#FDD800" }}></span>
             <span className="dot" style={{ background: "#5AC05A" }}></span>
           </div>
-          <center><input
+         <input
             type="text"
             value="VEHICLAR"
             readOnly
-            style={{ background: "transparent", border: "none", fontWeight: "600", fontSize: "14px" }}
+            style={{ background: "transparent", paddingLeft:"100px", border: "none", fontWeight: "600", fontSize: "14px" }}
           />
-          </center>
           <button
             onClick={generatePDF}
             className="download-button"
@@ -182,28 +183,33 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
             <div className="uploaded-image-wrapper">
               <img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" />
             </div>
-            <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados CLIP + MLPClassifier</h1>
+            <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados </h1>
             <div className="result-grid">
-              <div className="result-label">Label: </div>
-              <div className="result-value">{taskResult["Label"]}</div>
+              <div className="result-label">Etiqueta: </div>
+              <div className="result-value">{taskResult["Etiqueta"]}</div>
 
-              <div className="result-label">Probability: </div>
-              <div className="result-value">{taskResult.Probability}</div>
+              <div className="result-label">Probabilidad: </div>
+              <div className="result-value">{taskResult.Probabilidad}</div>
 
-              <div className="result-label">Top 3 scores: </div>
+              <div className="result-label">Top 3 resultados: </div>
               <div className="result-value">
-                {taskResult["Top 3 scores"] &&
-                  Object.entries(taskResult["Top 3 scores"]).map(([label, score]) => (
-                    <div key={label}>{label}: {(score as number * 100).toFixed(2)}%</div>
+                {taskResult["Top 3 resultados"] &&
+                  Object.entries(taskResult["Top 3 resultados"]).map(([etiqueta, score]) => (
+                    <div key={etiqueta}>{etiqueta}: {(score as number * 100).toFixed(1)}%</div>
                   ))}
               </div>
+              <div className="result-label">Resultado final: </div>
+              <div className="result-value">{taskResult["Resultado final"]}</div>
+              <div className="result-label">Comentarios: </div>
+              <div
+                className="result-value"
+                dangerouslySetInnerHTML={{ __html: taskResult.Comentarios }}
+              />
 
-              <div className="result-label">Final result: </div>
-              <div className="result-value">{taskResult["Final result"]}</div>
             </div> 
 
             {!showClone && (
-              <p style={{ textAlign: "center", marginTop: "30px", color: "#6b7280" }}>
+              <p style={{ textAlign: "center", marginTop: "30px", color: "black", fontWeight:"600" }}>
                 {FOOTER_TEXT}
               </p>
             )}
@@ -229,7 +235,7 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
           <div style={{ maxWidth: "600px", margin: "40px auto", borderRadius: "12px" }}>
           <img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" />
           </div>
-          <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados CLIP + MLPClassifier</h1>
+          <h1 style={{ textAlign:"center", fontSize: "24px" }}> Resultados </h1>
           <div
             style={{
               display: "grid",
@@ -244,22 +250,27 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
             }}
           >
             
-            <div className="result-label">Label: </div>
-              <div className="result-value">{taskResult["Label"]}</div>
+            <div className="result-label">Etiqueta: </div>
+              <div className="result-value">{taskResult["Etiqueta"]}</div>
 
-              <div className="result-label">Probability: </div>
-              <div className="result-value">{taskResult.Probability}</div>
+              <div className="result-label">Probabilidad: </div>
+              <div className="result-value">{taskResult.Probabilidad}</div>
 
-              <div className="result-label">Top 3 scores: </div>
+              <div className="result-label">Top 3 resultados: </div>
               <div className="result-value">
-                {taskResult["Top 3 scores"] &&
-                  Object.entries(taskResult["Top 3 scores"]).map(([label, score]) => (
+                {taskResult["Top 3 resultados"] &&
+                  Object.entries(taskResult["Top 3 resultados"]).map(([label, score]) => (
                     <div key={label}>{label}: {(score as number * 100).toFixed(2)}%</div>
                   ))}
               </div>
 
-              <div className="result-label">Final result: </div>
-              <div className="result-value">{taskResult["Final result"]}</div>
+              <div className="result-label">Resultado final: </div>
+              <div className="result-value">{taskResult["Resultado final"]}</div>
+              <div className="result-label">Comentarios: </div>
+              <div
+                className="result-value"
+                dangerouslySetInnerHTML={{ __html: taskResult.Comentarios }}
+              />
           </div>
         </div>
       )}

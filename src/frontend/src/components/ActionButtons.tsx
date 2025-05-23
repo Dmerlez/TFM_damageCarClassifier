@@ -6,14 +6,14 @@ const ActionButtonsWrapper = styled.div`
   justify-content: space-between;
   width: 400px;
   position: absolute;
-  left: -10px;
+  left: 400px;
   bottom: -120px;
 
   button {
     margin: 20px 20px 20px 0;
     padding: 20px 50px;
     position: relative;
-    font-size: 20px;
+    font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -113,10 +113,10 @@ const ActionButtons = () => {
   return (
     <ActionButtonsWrapper>
       <button onClick={handleOkClick} className="ok-button">
-        Confirm
+        Confirmar
       </button>
       <button onClick={handleCancelClick} className="cancel-button">
-        Cancel
+        Cancelar
       </button>
     </ActionButtonsWrapper>
   );

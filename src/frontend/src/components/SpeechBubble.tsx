@@ -57,7 +57,7 @@ const BubbleWrapper = styled.div<BubbleWrapperProps>`
       case "top":
         return `calc(${$position.top} - 400px)`;
       case "bottom":
-        return `calc(${$position.top} + 50px)`;
+        return `calc(${$position.top} + 350px)`;
       case "left":
         return `calc(${$position.top} - 200px)`;
       case "right":
@@ -71,7 +71,7 @@ const BubbleWrapper = styled.div<BubbleWrapperProps>`
       case "top":
         return `calc(${$position.left} - 200px)`;
       case "bottom":
-        return `calc(${$position.left} - 200px)`;
+        return `calc(${$position.left} - 100px)`;
       case "left":
         return `calc(${$position.left} - 800px)`;
       case "right":
@@ -80,43 +80,12 @@ const BubbleWrapper = styled.div<BubbleWrapperProps>`
     }
   }};
 
-  display: inline-block;
-  margin: 20px;
-  line-height: 1.3em;
-  background-color: #fff;
-  color: #000;
-  padding: 12px;
-  box-shadow: 0 -4px #fff, 0 -8px #000, 4px 0 #fff, 4px -4px #000, 8px 0 #000,
-    0 4px #fff, 0 8px #000, -4px 0 #fff, -4px 4px #000, -8px 0 #000,
-    -4px -4px #000, 4px 4px #000;
-  box-sizing: border-box;
-  width: ${({ $direction }) => {
-    switch ($direction) {
-      case "top":
-      case "bottom":
-        return "400px";
-      case "left":
-      case "right":
-      default:
-        return "600px";
-    }
-  }};
-  font-size: 22px;
-  text-align: left;
-  text-transform: uppercase;
-  font-weight: bold;
-  box-shadow: 0 -4px #fff, 0 -8px #000, 4px 0 #fff, 4px -4px #000, 8px 0 #000,
-    0 4px #fff, 0 8px #000, -4px 0 #fff, -4px 4px #000, -8px 0 #000,
-    -4px -4px #000, 4px 4px #000, 4px 12px rgba(0, 0, 0, 0.1),
-    12px 4px rgba(0, 0, 0, 0.1), 8px 8px rgba(0, 0, 0, 0.1);
 
-  p {
-    margin: 0;
-  }
+ 
 
   &::after {
     content: "";
-    display: block;
+    display: none;
     position: absolute;
     box-sizing: border-box;
 
@@ -143,7 +112,7 @@ const SpeechBubble = ({
   text,
 }: SpeechBubbleProps) => (
   <BubbleWrapper $direction={direction} $position={position}>
-    {text}
+
     {actions}
   </BubbleWrapper>
 );
