@@ -64,6 +64,7 @@ const TaskResultsWrapper = styled.div`
 
   .uploaded-image-wrapper {
     max-width: 900px;
+    height: auto;
     margin: 20px auto;
     background: rgb(0, 0, 0);
     padding: 2px;
@@ -307,7 +308,7 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
         >
           <h1 style={{ textAlign: "center", fontSize: "24px", fontWeight: 600 }}>{HEADER_TEXT}</h1>
           <div style={{ maxWidth: "600px", margin: "40px auto", borderRadius: "12px" }}>
-          <img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" />
+          <center><img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" /></center>
           </div>
           <h1 style={{ textAlign:"center", fontSize: "24px" }}> RESULTADOS </h1>
           <div
