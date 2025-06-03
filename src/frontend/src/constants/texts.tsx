@@ -6,7 +6,7 @@ export const ROBOT_TEXT_INITIAL = (
     </p>
     <p>
       Por favor, proporciona una foto y haré todo lo posible para obtener la
-      classificación correcta!
+      clasificación correcta!
     </p>
   </>
 );

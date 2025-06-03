@@ -31,7 +31,7 @@ const StyledWrapper = styled.div`
 
   .final-result-container {
     width: 100%;
-    margin: 50px 50px 100px 500px;
+    margin: -10px 0px 0px 0px;
     z-index: 100;
   }
 `;
@@ -64,6 +64,7 @@ function App() {
             position={{ left: "230px", top: "280px" }}
             text={ROBOT_TEXT_FINAL}
             actions={<ActionButtons />}
+            showSpeech={true}
           />
           <TaskResults taskResult={taskResponse} image={uploadedImage!} />
         </div>
@@ -76,6 +77,7 @@ function App() {
           <Robot
             direction="left"
             position={{ left: "75%", top: "300px" }}
+            showSpeech={true}
             text={ROBOT_TEXT_PENDING}
           />
           <StatusChecker taskId={taskId} onReady={handleTaskReady} />
@@ -86,8 +88,9 @@ function App() {
     return (
       <>
         <Robot
-          position={{ left: "25%", top: "300px" }}
+          position={{ left: "50%", top: "300px" }}
           text={ROBOT_TEXT_INITIAL}
+          showSpeech={false}
         />
         <div className="dropzone-container">
           <FileUpload onSuccess={handleFileUploadSuccess} />

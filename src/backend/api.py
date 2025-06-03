@@ -6,13 +6,18 @@ import asyncio
 from collections import OrderedDict
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
+import numpy as np
+from datetime import datetime
+from PIL import Image
+from io import BytesIO
 
 # Añadir "src/" al PYTHONPATH
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Importar desde backend.infer
 from backend.infer.mlp_predictor import predict_with_mlp
-
+now = datetime.now().strftime("%d/%m/%Y - %H:%M")
+now1 = datetime.now().strftime("%d/%m/%Y a las %H:%M")
 # Initialize FastAPI
 app = FastAPI()
 
@@ -31,52 +36,68 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 async def get_mapping(task_id: str, file_path: str):
-    """
-    Process the image and store the classification result.
-    Saves response.json in uploads/{task_id}/ when finished.
-    """
     print(f"\nProcessing task: {task_id}...")
 
     try:
-       #TO DO: PUT YOU FUNCTION HERE
-        # Realizar inferencia Zero-Shot CLIP
-        pred_label, score_top1, top3_dict = predict_with_mlp(file_path)
+        # Obtener información del archivo
+        file_name = os.path.basename(file_path)
+        with open(file_path, "rb") as f:
+            file_bytes = f.read()
+            file_size_mb = round(len(file_bytes) / (1024 * 1024), 2)
+            image = Image.open(BytesIO(file_bytes))
+            width, height = image.size
 
-        # Top 3 clases por score
-        # Top 3
-        #top3 = sorted(class_scores.items(), key=lambda x: x[1], reverse=True)[:3]
-        #top3_dict = OrderedDict((label, round(score, 4)) for label, score in top3)
+        # Realizar inferencia
+        top_class, score_top1, top3_scores = predict_with_mlp(file_path)
+        score_top1 = round(float(score_top1) * 100, 2)
+        top3_scores = {label: round(float(prob), 2) for label, prob in top3_scores.items()}
 
-        # Top 1
-        #label_top1, score_top1 = top3[0]  # o usar sorted(...)[0]
+        top_scores = sorted(top3_scores.items(), key=lambda x: x[1], reverse=True)
+        top1_score = top_scores[0][1]
+        top2_score = top_scores[1][1]
+        confianza_pct = round((top1_score - top2_score) * 100, 2)
+        confianza_label = "Alta" if confianza_pct > 50 else "Media" if confianza_pct > 20 else "Baja"
 
+        # Formatear fecha y hora
+        now = datetime.now().strftime("%d/%m/%Y - %H:%M")
+
+        # Crear response
         response = {
             "task_id": task_id,
             "status": "Success",
             "response": {
-                "Label": pred_label,
-                "Probability": f"{round(score_top1 * 100, 2)}%",
-                "Top 3 scores": {label: round(prob * 1, 2) for label, prob in top3_dict.items()},
-                "Final result": pred_label,
-                "Comments": "Prediction based on CLIP + MLPClassifier."
+                "Modelo": "CLIP (Zero-Shot) + MLPClassifier",
+                "Etiqueta": top_class,
+                "Probabilidad": f"{score_top1}%",
+                "Top 3 resultados": top3_scores,
+                "Confianza del modelo": f"{confianza_label} (sobre el {confianza_pct}%)",
+                "Fecha y hora": now,
+                "Imagen": file_name,
+                "Tamaño archivo": f"{file_size_mb} MB",
+                "Resolución": f"{width} x {height} px",
+                "Resumen": f"La imagen <strong>{file_name}</strong> (resolución <strong>{width} x {height} px</strong>, tamaño <strong>{file_size_mb} MB</strong>) fue analizada utilizando el modelo <strong>CLIP (Zero-Shot) + MLPClassifier</strong>, identificando la etiqueta <strong>{top_class}</strong> como la más probable con una confianza de <strong>{score_top1}%</strong>."
+
             },
         }
 
         response_file = os.path.join(UPLOAD_FOLDER, task_id, "response.json")
-
-# 👇🏽 Aquí agregas el print
         print(f"📁 Guardando response en: {response_file}")
-
-        print(f"Processing succeeded for task {task_id}")
+        print(f"✅ Processing succeeded for task {task_id}")
 
     except Exception as e:
         print(f"Processing failed for task {task_id}: {str(e)}")
         response = {"task_id": task_id, "status": "Failed", "response": None}
 
+    # Guardar el response como JSON
     response_file = os.path.join(UPLOAD_FOLDER, task_id, "response.json")
+    def convert(o):
+        if isinstance(o, np.float32):
+            return float(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        raise TypeError(f"Object of type {type(o)} is not JSON serializable")
     with open(response_file, "w", encoding="utf-8") as f:
-        json.dump(response, f, indent=2)
-
+        json.dump(response, f, indent=2, default=convert, ensure_ascii=False)
 
 @app.post("/upload")
 async def upload_excel(file: UploadFile = File(...), task_id: str = Form()):

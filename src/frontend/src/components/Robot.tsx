@@ -16,6 +16,7 @@ export type RobotProps = {
   position: Position;
   direction?: Direction;
   text: React.JSX.Element | string;
+  showSpeech?: boolean;
 };
 
 type RobotWrapperProps = { $position: Position; $direction?: Direction };
@@ -29,7 +30,7 @@ const RobotWrapper = styled.div<RobotWrapperProps>`
     left: ${({ $position }) => $position.left};
     display: block;
     margin: 0 auto;
-    margin-left: -300px;
+    display:none;
     transform: scale(0.6) translate(0, -100%);
     transform-origin: center;
     height: 800px;
@@ -55,17 +56,20 @@ const Robot = ({
   direction = "right",
   text,
   actions,
+  showSpeech = true, // 👈 por defecto sí se muestra
 }: RobotProps) => (
   <RobotWrapper $position={position} $direction={direction}>
     <div className="robot">
       <InlineSVG src={robot} />
     </div>
-    <SpeechBubble
-      position={position}
-      direction={direction}
-      text={text}
-      actions={actions}
-    />
+    {showSpeech && (
+      <SpeechBubble
+        position={position}
+        direction={direction}
+        text={text}
+        actions={actions}
+      />
+    )}
   </RobotWrapper>
 );
 
