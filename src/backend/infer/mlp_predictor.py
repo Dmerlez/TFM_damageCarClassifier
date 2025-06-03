@@ -6,7 +6,6 @@ from transformers import CLIPProcessor, CLIPModel
 from scipy.special import softmax
 from sklearn.utils.class_weight import compute_class_weight
 
-
 # Cargar CLIP
 clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
 clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
@@ -16,15 +15,12 @@ clip_model.eval()
 mlp = joblib.load("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/MLPClassifier_clip_model.pkl")
 scaler = joblib.load("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/MLPClassifier_scaler.pkl")
 
-
 # Cargar LabelEncoder y obtener clases en orden correcto
 le = joblib.load("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/MLPClassifier_label_encoder.pkl")
 CLASSES = list(le.classes_)
 # Etiquetas que usaste durante el entrenamiento 
 
-
-
-def predict_with_mlp(image_path):
+def predict_with_mlp(image_path): 
     # Procesar imagen
     image = Image.open(image_path).convert("RGB")
     inputs = clip_processor(images=image, return_tensors="pt")
@@ -46,7 +42,7 @@ def predict_with_mlp(image_path):
     top3_idx = probs.argsort()[-3:][::-1]
     top3 = [(CLASSES[i], round(probs[i]*100, 2)) for i in top3_idx]
 
-    print("Input vector (after scaler):", vector)
-    print("Probs:", probs)
+    #print("Input vector (after scaler):", vector)
+    #print("Probs:", probs)
 
     return top_class, probs[top_idx], {CLASSES[i]: probs[i] for i in top3_idx}

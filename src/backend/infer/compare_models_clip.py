@@ -7,20 +7,11 @@ from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.preprocessing import StandardScaler
 import joblib
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
-from scipy.interpolate import make_interp_spline
-
-
-
-
-# Calcular pesos por clase
+from sklearn.preprocessing import label_binarize
 
 # Cargar datos extraídos previamente
 X = np.load("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/X_clip.npy")
@@ -43,6 +34,7 @@ X_test_scaled = scaler.transform(X_test)
 classes = np.unique(y_train)
 class_weights_array = compute_class_weight(class_weight='balanced', classes=classes, y=y_train)
 class_weight_dict = dict(zip(classes, class_weights_array))
+y_test_bin = label_binarize(y_test, classes=classes)
 
 # Modelos a comparar
 models = {
@@ -55,19 +47,17 @@ models = {
         random_state=42
     ),
     "XGBoost": XGBClassifier(
-        use_label_encoder=False,
         eval_metric='mlogloss',
-        learning_rate=0.05,
-        n_estimators=300,
+        learning_rate=0.1,
+        n_estimators=1000,
         max_depth=3,
         subsample=0.8,
         colsample_bytree=0.8,
         reg_alpha=0.1,
         reg_lambda=1.0,
         random_state=42,
-        class_weight=class_weight_dict
-    ),
-    "KNN": KNeighborsClassifier(n_neighbors=3)
+        gamma=0.2
+    )
 }
 
 # Entrenamiento y evaluación

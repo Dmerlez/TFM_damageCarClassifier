@@ -260,9 +260,9 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
                     <div key={etiqueta}>{etiqueta}: {(score as number * 100).toFixed(1)}%</div>
                   ))}
               </div>
-              <div className="result-label"><strong>Confianza del modelo:</strong></div>
+              <div className="result-label"><strong>Confianza:</strong></div>
               <div className="result-value">{taskResult["Confianza del modelo"]}</div>
-              <div className="result-label"><strong>Nombre del archivo:</strong></div>
+              <div className="result-label"><strong>Archivo:</strong></div>
               <div className="result-value">{fileName}</div>
 
               <div className="result-label"><strong>Tamaño:</strong></div>
@@ -279,10 +279,7 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
                 className="result-value"
                 dangerouslySetInnerHTML={{ __html: taskResult.Resumen }}
               />
-              
-
-            </div> 
-
+            </div>
             {!showClone && (
               <p style={{ textAlign: "center", marginTop: "30px", color: "black"}}>
                 Si estás conforme con esta clasificación, presiona el botón “<strong>Confirmar</strong>”. Si detectas algún error ajusta la clase manualmente.
@@ -339,9 +336,9 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
                     <div key={label}>{label}: {(score as number * 100).toFixed(2)}%</div>
                   ))}
               </div>
-              <div className="result-label"><strong>Confianza del modelo:</strong></div>
+              <div className="result-label"><strong>Confianza:</strong></div>
               <div className="result-value">{taskResult["Confianza del modelo"]}</div>
-              <div className="result-label"><strong>Nombre del archivo:</strong></div>
+              <div className="result-label"><strong>Archivo:</strong></div>
               <div className="result-value">{fileName}</div>
 
               <div className="result-label"><strong>Tamaño:</strong></div>
@@ -358,7 +355,6 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
                 className="result-value"
                 dangerouslySetInnerHTML={{ __html: taskResult.Resumen }}
               />
-              
           </div>
         </div>
       )}

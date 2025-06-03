@@ -18,6 +18,7 @@ y = []
 
 for class_name in sorted(os.listdir(DATASET_DIR)):
     class_path = os.path.join(DATASET_DIR, class_name)
+    
     if not os.path.isdir(class_path):
         continue
 
