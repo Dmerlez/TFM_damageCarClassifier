@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 from transformers import CLIPProcessor, CLIPModel
+from pathlib import Path
 
 # Config
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -11,8 +12,10 @@ clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device
 clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
 # Ruta a dataset (subcarpetas por clase)
-DATASET_DIR = "/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/data/all"  # ⚠️ Modifica según tu estructura
+BASE_DIR = Path(__file__).resolve().parent
 
+# Subir tres niveles y entrar en 'data/all'
+DATASET_DIR = BASE_DIR.parents[2] / "data" / "all"
 X = []
 y = []
 
@@ -39,6 +42,14 @@ for class_name in sorted(os.listdir(DATASET_DIR)):
             print(f"Error en {img_path}: {e}")
 
 # Guardar
-np.save("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/X_clip.npy", np.array(X))
-np.save("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/y_labels.npy", np.array(y))
+# Ruta base del script actual
+BASE_DIR = Path(__file__).resolve().parent
+
+# Ruta a la carpeta models (sube tres niveles desde src/backend/infer)
+models_dir = BASE_DIR.parents[2] / "models"
+
+# Guardar los archivos
+np.save(models_dir / "X_clip.npy", np.array(X))
+np.save(models_dir / "y_labels.npy", np.array(y))
+
 print("✅ Embeddings guardados como 'X_clip.npy' y 'y_labels.npy'")

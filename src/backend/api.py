@@ -16,6 +16,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Importar desde backend.infer
 from backend.infer.mlp_predictor import predict_with_mlp
+from backend.infer.infer_chatgpt import predict_with_chatgpt
+
 now = datetime.now().strftime("%d/%m/%Y - %H:%M")
 now1 = datetime.now().strftime("%d/%m/%Y a las %H:%M")
 # Initialize FastAPI
@@ -47,7 +49,7 @@ async def get_mapping(task_id: str, file_path: str):
             image = Image.open(BytesIO(file_bytes))
             width, height = image.size
 
-        # Realizar inferencia
+        # Realizar inferencia con Zero-Shot
         top_class, score_top1, top3_scores = predict_with_mlp(file_path)
         score_top1 = round(float(score_top1) * 100, 2)
         top3_scores = {label: round(float(prob), 2) for label, prob in top3_scores.items()}
@@ -58,6 +60,10 @@ async def get_mapping(task_id: str, file_path: str):
         confianza_pct = round((top1_score - top2_score) * 100, 2)
         confianza_label = "Alta" if confianza_pct > 50 else "Media" if confianza_pct > 20 else "Baja"
 
+        # Realizar inferencia con ChatGPT
+        response_gpt = predict_with_chatgpt(file_path)
+        print("GPT Answer: ", response_gpt)
+
         # Formatear fecha y hora
         now = datetime.now().strftime("%d/%m/%Y - %H:%M")
 
@@ -66,7 +72,9 @@ async def get_mapping(task_id: str, file_path: str):
             "task_id": task_id,
             "status": "Success",
             "response": {
-                "Modelo": "CLIP (Zero-Shot) + MLPClassifier",
+                "Modelo 1": "Chat GPT 4 vision",
+                "Respuesta": response_gpt,
+                "Modelo 2": "CLIP (Zero-Shot) + MLPClassifier",
                 "Etiqueta": top_class,
                 "Probabilidad": f"{score_top1}%",
                 "Top 3 resultados": top3_scores,
