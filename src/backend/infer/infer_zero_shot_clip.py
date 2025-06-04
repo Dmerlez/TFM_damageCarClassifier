@@ -46,7 +46,11 @@ def classify_image(img_path):
     return pred_class, class_scores
 
 def main():
-    folder_path = "/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/data/val/Abolladuras/"
+    # Carpeta donde está tu script actual
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    # Sube carpetas hasta llegar al proyecto y entra a "models"
+    folder_path = os.path.join(BASE_DIR, "..", "..", "..", "data", "val" , "Abolladuras")
     true_class = os.path.basename(os.path.normpath(folder_path))  # Extrae "Intacto"
 
     for img_name in os.listdir(folder_path):

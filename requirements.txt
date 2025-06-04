@@ -4,6 +4,8 @@ torchvision
 transformers
 scikit-learn
 numpy
+pandas
+xgboost
 
 # Image processing
 Pillow
@@ -18,6 +20,7 @@ seaborn
 tqdm
 requests
 python-dotenv
+joblib
 
 # Notebook support (optional)
 notebook

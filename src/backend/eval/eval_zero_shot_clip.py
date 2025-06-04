@@ -5,8 +5,11 @@ from collections import Counter
 import matplotlib.pyplot as plt
 from src.backend.infer.infer_zero_shot_clip import classify_image
 from src.config import EVAL_CLASSES
+from pathlib import Path
 
-VAL_DIR = "/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/data/all"
+# Ruta base del script actual
+BASE_DIR = Path(__file__).resolve().parent
+VAL_DIR = BASE_DIR.parents[2] / "data" / "all"
 
 def main():
     y_true = []

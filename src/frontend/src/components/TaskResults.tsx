@@ -199,14 +199,13 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
       const pdfElement = cloneRef.current;
       if (!pdfElement) return;
 
-      html2canvas(pdfElement, { scale: 2, useCORS: true }).then((canvas) => {
+      html2canvas(pdfElement, { scale: 2, useCORS: true } as any).then((canvas: HTMLCanvasElement) => {
         const imgData = canvas.toDataURL("image/png");
         const pdf = new jsPDF("p", "pt", "a4");
-        const imgProps = pdf.getImageProperties(imgData);
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
         pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-        pdf.save("informe_vehiclar.pdf");
+        pdf.save("download.pdf");
         setShowClone(false);
       });
     }, 300);
@@ -245,8 +244,17 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
             </div>
             <h1 style={{ textAlign:"center", fontSize: "24px" }}> <strong>RESULTADOS</strong> </h1>
             <div className="result-grid">
-              <div className="result-label"><strong>Modelo:</strong></div>
-              <div className="result-value">{taskResult["Modelo"]}</div>
+              <div className="result-label"><strong>Modelo #1:</strong></div>
+              <div className="result-value">{taskResult["Modelo 1"]}</div>
+              <div className="result-label"><strong>Respuesta:</strong> </div>
+              <div className="result-value">{taskResult["Respuesta"]}</div>
+
+              {/* Divider here */}
+              <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid #ccc", margin: "10px 0" }} />
+
+
+              <div className="result-label"><strong>Modelo #2:</strong></div>
+              <div className="result-value">{taskResult["Modelo 2"]}</div>
               <div className="result-label"><strong>Etiqueta:</strong> </div>
               <div className="result-value">{taskResult["Etiqueta"]}</div>
 

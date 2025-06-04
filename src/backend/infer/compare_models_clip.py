@@ -1,4 +1,5 @@
 import joblib
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
@@ -10,12 +11,17 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.preprocessing import StandardScaler
-import joblib
 from sklearn.preprocessing import label_binarize
 
+# Directorio base del script actual
+BASE_DIR = Path(__file__).resolve().parent
+
+# Ruta a la carpeta models (subiendo tres niveles)
+models_dir = BASE_DIR.parents[2] / "models"
+
 # Cargar datos extraídos previamente
-X = np.load("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/X_clip.npy")
-y = np.load("/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/y_labels.npy")
+X = np.load(models_dir / "X_clip.npy")
+y = np.load(models_dir / "Y_clip.npy")
 
 # Codificar etiquetas string a números
 le = LabelEncoder()
@@ -79,9 +85,14 @@ for name, model in models.items():
     print("\n📊 Matriz de Confusión:")
     print(pd.DataFrame(confusion_matrix(y_test_labels, y_pred_labels), 
                        index=le.classes_, columns=le.classes_))
-    
-    # Guardar modelo
-    joblib.dump(model, f"/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/{name}_clip_model.pkl")
-    joblib.dump(scaler, f"/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/{name}_scaler.pkl")
-    # Guardar LabelEncoder
-    joblib.dump(le, f"/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/models/{name}_label_encoder.pkl")
+
+    # Ruta base al directorio del script actual
+    BASE_DIR = Path(__file__).resolve().parent
+
+    # Ruta relativa a la carpeta models (sube 3 niveles desde /infer)
+    models_dir = BASE_DIR.parents[2] / "models"
+
+    # Guardar modelo, scaler y LabelEncoder
+    joblib.dump(model, models_dir / f"{name}_clip_model.pkl")
+    joblib.dump(scaler, models_dir / f"{name}_scaler.pkl")
+    joblib.dump(le, models_dir / f"{name}_label_encoder.pkl")
