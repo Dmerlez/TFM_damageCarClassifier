@@ -104,7 +104,7 @@ const ActionButtonsWrapper = styled.div`
 
 const ActionButtons = () => {
   const handleOkClick = () => {
-    alert("Your data was successfully transferred!");
+    alert("Datos guardados correctamente");
     window.location.reload();
   };
 
