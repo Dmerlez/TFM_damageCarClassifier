@@ -203,11 +203,29 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
         const imgData = canvas.toDataURL("image/png");
         const pdf = new jsPDF("p", "pt", "a4");
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-        pdf.save("download.pdf");
+      
+        const aspectRatio = canvas.width / canvas.height;
+        const maxHeight = 500; // px en unidades PDF (pt)
+      
+        // Cálculo proporcional para mantener la relación de aspecto
+        let imgHeight = (canvas.height * pdfWidth) / canvas.width;
+        let imgWidth = pdfWidth;
+      
+        if (imgHeight > maxHeight) {
+          imgHeight = maxHeight;
+          imgWidth = imgHeight * aspectRatio;
+        }
+      
+        const x = (pdf.internal.pageSize.getWidth() - imgWidth) / 2; // centrar horizontalmente
+        const y = 0;
+      
+        pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+      
+        const pdfFileName = fileName.replace(/\.[^/.]+$/, "") + ".pdf";
+        pdf.save(pdfFileName);
         setShowClone(false);
       });
+      
     }, 300);
   };
 
@@ -244,32 +262,36 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
             </div>
             <h1 style={{ textAlign:"center", fontSize: "24px" }}> <strong>RESULTADOS</strong> </h1>
             <div className="result-grid">
-              <div className="result-label"><strong>Modelo #1:</strong></div>
+              <div className="result-label"><strong>Modelo 1:</strong></div>
               <div className="result-value">{taskResult["Modelo 1"]}</div>
-              <div className="result-label"><strong>Respuesta:</strong> </div>
-              <div className="result-value">{taskResult["Respuesta"]}</div>
+              <div className="result-label"><strong>Etiqueta:</strong> </div>
+              <div className="result-value">{taskResult["Etiqueta_gpt"]}</div>
+              <div className="result-label"><strong>Confianza:</strong> </div>
+              <div className="result-value">{taskResult["Probabilidad_gpt"]}</div>
 
               {/* Divider here */}
               <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid #ccc", margin: "10px 0" }} />
 
 
-              <div className="result-label"><strong>Modelo #2:</strong></div>
+              <div className="result-label"><strong>Modelo 2:</strong></div>
               <div className="result-value">{taskResult["Modelo 2"]}</div>
               <div className="result-label"><strong>Etiqueta:</strong> </div>
               <div className="result-value">{taskResult["Etiqueta"]}</div>
 
-              <div className="result-label"><strong>Probabilidad:</strong> </div>
+              <div className="result-label"><strong>Confianza:</strong> </div>
               <div className="result-value">{taskResult.Probabilidad}</div>
 
+              {/*
               <div className="result-label"><strong>Top 3 resultados:</strong> </div>
               <div className="result-value">
                 {taskResult["Top 3 resultados"] &&
-                  Object.entries(taskResult["Top 3 resultados"]).map(([etiqueta, score]) => (
-                    <div key={etiqueta}>{etiqueta}: {(score as number * 100).toFixed(1)}%</div>
+                  Object.entries(taskResult["Top 3 resultados"]).map(([label, score]) => (
+                    <div key={label}>{label}: {(score as number * 100).toFixed(2)}%</div>
                   ))}
               </div>
-              <div className="result-label"><strong>Confianza:</strong></div>
-              <div className="result-value">{taskResult["Confianza del modelo"]}</div>
+              */}
+              <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid #ccc", margin: "10px 0" }} />
+
               <div className="result-label"><strong>Archivo:</strong></div>
               <div className="result-value">{fileName}</div>
 
@@ -282,11 +304,6 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
               </div>
               <div className="result-label"><strong>Fecha y Hora:</strong> </div>
               <div className="result-value">{clasificadoEn}</div>
-              <div className="result-label"><strong>Resumen:</strong> </div>
-              <div
-                className="result-value"
-                dangerouslySetInnerHTML={{ __html: taskResult.Resumen }}
-              />
             </div>
             {!showClone && (
               <p style={{ textAlign: "center", marginTop: "30px", color: "black"}}>
@@ -312,7 +329,7 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
           }}
         >
           <h1 style={{ textAlign: "center", fontSize: "24px", fontWeight: 600 }}>{HEADER_TEXT}</h1>
-          <div style={{ maxWidth: "600px", margin: "40px auto", borderRadius: "12px" }}>
+          <div style={{ maxWidth: "900px", margin: "40px auto", borderRadius: "12px" }}>
           <center><img src={URL.createObjectURL(image)} alt="uploaded" className="uploaded-image" /></center>
           </div>
           <h1 style={{ textAlign:"center", fontSize: "24px" }}> RESULTADOS </h1>
@@ -321,7 +338,7 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
               display: "grid",
               gridTemplateColumns: "1fr 2fr",
               gap: "16px",
-              maxWidth: "570px",
+              maxWidth: "900px",
               margin: "auto",
               padding: "24px",
               background: "#f9fafb",
@@ -329,14 +346,25 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
               border:"1px solid",
             }}
           >
-            <div className="result-label"><strong>Modelo:</strong> </div>
-            <div className="result-value">{taskResult["Modelo"]}</div>
+            <div className="result-label"><strong>Modelo 1:</strong></div>
+              <div className="result-value">{taskResult["Modelo 1"]}</div>
+              <div className="result-label"><strong>Etiqueta:</strong> </div>
+              <div className="result-value">{taskResult["Etiqueta_gpt"]}</div>
+              <div className="result-label"><strong>Probabilidad:</strong> </div>
+              <div className="result-value">{taskResult["Probabilidad_gpt"]}</div>
+
+              {/* Divider here */}
+              <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid #ccc", margin: "10px 0" }} />
+              
+            <div className="result-label"><strong>Modelo 2:</strong> </div>
+            <div className="result-value">{taskResult["Modelo 2"]}</div>
             <div className="result-label"><strong>Etiqueta:</strong> </div>
               <div className="result-value">{taskResult["Etiqueta"]}</div>
 
               <div className="result-label"><strong>Probabilidad:</strong> </div>
               <div className="result-value">{taskResult.Probabilidad}</div>
-
+              
+              {/*
               <div className="result-label"><strong>Top 3 resultados:</strong> </div>
               <div className="result-value">
                 {taskResult["Top 3 resultados"] &&
@@ -344,8 +372,10 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
                     <div key={label}>{label}: {(score as number * 100).toFixed(2)}%</div>
                   ))}
               </div>
-              <div className="result-label"><strong>Confianza:</strong></div>
-              <div className="result-value">{taskResult["Confianza del modelo"]}</div>
+              */}
+              <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid #ccc", margin: "10px 0" }} />
+              
+
               <div className="result-label"><strong>Archivo:</strong></div>
               <div className="result-value">{fileName}</div>
 
@@ -358,11 +388,6 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
               </div>
               <div className="result-label"><strong>Fecha y Hora:</strong> </div>
               <div className="result-value">{clasificadoEn}</div>
-              <div className="result-label"><strong>Resumen:</strong> </div>
-              <div
-                className="result-value"
-                dangerouslySetInnerHTML={{ __html: taskResult.Resumen }}
-              />
           </div>
         </div>
       )}

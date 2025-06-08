@@ -62,6 +62,11 @@ async def get_mapping(task_id: str, file_path: str):
 
         # Realizar inferencia con ChatGPT
         response_gpt = predict_with_chatgpt(file_path)
+
+        # Realizar inferencia con ChatGPT
+        label_gpt, confidence_gpt = predict_with_chatgpt(file_path)
+        print("GPT Vision - Etiqueta:", label_gpt)
+        print("GPT Vision - Confianza:", confidence_gpt)
         print("GPT Answer: ", response_gpt)
 
         # Formatear fecha y hora
@@ -73,18 +78,16 @@ async def get_mapping(task_id: str, file_path: str):
             "status": "Success",
             "response": {
                 "Modelo 1": "Chat GPT 4 vision",
-                "Respuesta": response_gpt,
-                "Modelo 2": "CLIP (Zero-Shot) + MLPClassifier",
+                "Etiqueta_gpt": label_gpt,
+                "Probabilidad_gpt": confidence_gpt,
+                "Modelo 2": "CLIP + MLPClassifier",
                 "Etiqueta": top_class,
                 "Probabilidad": f"{score_top1}%",
-                "Top 3 resultados": top3_scores,
-                "Confianza del modelo": f"{confianza_label} (sobre el {confianza_pct}%)",
+                #"Top 3 resultados": top3_scores,
                 "Fecha y hora": now,
                 "Imagen": file_name,
                 "Tamaño archivo": f"{file_size_mb} MB",
-                "Resolución": f"{width} x {height} px",
-                "Resumen": f"La imagen <strong>{file_name}</strong> (resolución <strong>{width} x {height} px</strong>, tamaño <strong>{file_size_mb} MB</strong>) fue analizada utilizando el modelo <strong>CLIP (Zero-Shot) + MLPClassifier</strong>, identificando la etiqueta <strong>{top_class}</strong> como la más probable con una confianza de <strong>{score_top1}%</strong>."
-
+                "Resolución": f"{width} x {height} px"
             },
         }
 
