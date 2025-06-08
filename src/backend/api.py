@@ -66,7 +66,7 @@ async def get_mapping(task_id: str, file_path: str):
             "task_id": task_id,
             "status": "Success",
             "response": {
-                "Modelo": "CLIP (Zero-Shot) + MLPClassifier",
+                "Modelo": "CLIP + MLPClassifier",
                 "Etiqueta": top_class,
                 "Probabilidad": f"{score_top1}%",
                 "Top 3 resultados": top3_scores,
