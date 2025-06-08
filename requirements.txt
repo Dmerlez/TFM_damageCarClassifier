@@ -3,14 +3,17 @@ torch>=2.0
 torchvision
 transformers
 scikit-learn
+xgboost
 numpy
 pandas
-xgboost
 
 # Image processing
 Pillow
 opencv-python
+
+# OpenAI
 openai
+python-dotenv
 
 # Plotting & analysis
 matplotlib
@@ -19,13 +22,12 @@ seaborn
 # Utility
 tqdm
 requests
-python-dotenv
 joblib
-
-# Notebook support (optional)
-notebook
 
 # Backend
 fastapi
 uvicorn
 python-multipart
+
+# Notebook (optional)
+notebook

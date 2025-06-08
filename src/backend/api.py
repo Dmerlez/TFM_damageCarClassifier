@@ -15,8 +15,11 @@ from io import BytesIO
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Importar desde backend.infer
-from backend.infer.mlp_predictor import predict_with_mlp
-from backend.infer.infer_chatgpt import predict_with_chatgpt
+#from backend.infer.mlp_predictor import predict_with_mlp
+#from backend.infer.infer_chatgpt import predict_with_chatgpt
+
+from infer.mlp_predictor import predict_with_mlp 
+from infer.infer_chatgpt import predict_with_chatgpt 
 
 now = datetime.now().strftime("%d/%m/%Y - %H:%M")
 now1 = datetime.now().strftime("%d/%m/%Y a las %H:%M")

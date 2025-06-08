@@ -350,18 +350,16 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
               <div className="result-value">{taskResult["Modelo 1"]}</div>
               <div className="result-label"><strong>Etiqueta:</strong> </div>
               <div className="result-value">{taskResult["Etiqueta_gpt"]}</div>
-              <div className="result-label"><strong>Probabilidad:</strong> </div>
+              <div className="result-label"><strong>Confianza:</strong> </div>
               <div className="result-value">{taskResult["Probabilidad_gpt"]}</div>
-
               {/* Divider here */}
               <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid #ccc", margin: "10px 0" }} />
-              
             <div className="result-label"><strong>Modelo 2:</strong> </div>
             <div className="result-value">{taskResult["Modelo 2"]}</div>
             <div className="result-label"><strong>Etiqueta:</strong> </div>
               <div className="result-value">{taskResult["Etiqueta"]}</div>
 
-              <div className="result-label"><strong>Probabilidad:</strong> </div>
+              <div className="result-label"><strong>Confianza:</strong> </div>
               <div className="result-value">{taskResult.Probabilidad}</div>
               
               {/*

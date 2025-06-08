@@ -8,7 +8,15 @@ from config import CLASSES
 # Load environment variables
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key)
+org_id = os.getenv("OPENAI_ORG_ID")
+project_id = os.getenv("OPENAI_PROJECT_ID")
+#client = OpenAI(api_key=api_key)
+
+client = OpenAI(
+    api_key=api_key,
+    organization=org_id,    # <--- obligatorio con sk-proj
+    project=project_id       # <--- obligatorio con sk-proj
+) 
 
 
 
