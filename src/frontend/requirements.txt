@@ -1,0 +1,33 @@
+# Core ML libraries
+torch>=2.0
+torchvision
+transformers
+scikit-learn
+xgboost
+numpy
+pandas
+
+# Image processing
+Pillow
+opencv-python
+
+# OpenAI
+openai
+python-dotenv
+
+# Plotting & analysis
+matplotlib
+seaborn
+
+# Utility
+tqdm
+requests
+joblib
+
+# Backend
+fastapi
+uvicorn
+python-multipart
+
+# Notebook (optional)
+notebook

@@ -11,14 +11,28 @@ from sklearn.utils.class_weight import compute_class_weight
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Sube carpetas hasta llegar al proyecto y entra a "models"
-model_path = os.path.join(BASE_DIR, "..", "..", "..", "models", "MLPClassifier_clip_model.pkl")
-scaler_path = os.path.join(BASE_DIR, "..", "..", "..", "models", "MLPClassifier_scaler.pkl")
-encoder_path = os.path.join(BASE_DIR, "..", "..", "..", "models", "MLPClassifier_label_encoder.pkl")
+model_path = os.path.join(BASE_DIR, "..", "models", "MLPClassifier_clip_model.pkl")
+scaler_path = os.path.join(BASE_DIR, "..", "models", "MLPClassifier_scaler.pkl")
+encoder_path = os.path.join(BASE_DIR, "..", "models", "MLPClassifier_label_encoder.pkl")
 
 
 # Cargar CLIP
-clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+#clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+#clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+from transformers import CLIPModel, CLIPProcessor
+
+clip_model = CLIPModel.from_pretrained(
+    "/models/hf/clip-vit-base-patch32",
+    local_files_only=True
+)
+
+clip_processor = CLIPProcessor.from_pretrained(
+    "/models/hf/clip-vit-base-patch32",
+    local_files_only=True
+)
+
+
+
 clip_model.eval()
 
 # Cargar modelo entrenado y scaler

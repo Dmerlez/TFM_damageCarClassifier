@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile 
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src/backend:/app
+      - ./src/backend/models/hf:/models/hf
+    env_file: .env
+
+  frontend:
+    build:
+      context: ./src/frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

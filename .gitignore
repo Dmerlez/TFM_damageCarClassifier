@@ -18,7 +18,6 @@ ENV/
 
 # Datasets and models
 data/
-models/
 checkpoints/
 *.pt
 *.pth
