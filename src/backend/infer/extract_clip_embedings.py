@@ -45,8 +45,8 @@ for class_name in sorted(os.listdir(DATASET_DIR)):
 # Ruta base del script actual
 BASE_DIR = Path(__file__).resolve().parent
 
-# Ruta a la carpeta models (sube tres niveles desde src/backend/infer)
-models_dir = BASE_DIR.parents[2] / "models"
+# Ruta a la carpeta models (sube un nivel desde src/backend/infer hasta src/backend)
+models_dir = BASE_DIR.parent / "models"
 
 # Guardar los archivos
 np.save(models_dir / "X_clip.npy", np.array(X))

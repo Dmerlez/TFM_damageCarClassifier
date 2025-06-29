@@ -72,14 +72,13 @@ La aplicación estará disponible en:
 ```
 TFM_damageCarClassifier/
 ├── data/                          # Datasets de entrenamiento y validación
-├── models/                        # Modelos entrenados (CLIP, encoders, etc.)
 ├── src/
 │   ├── backend/                   # API FastAPI
 │   │   ├── api.py                # Endpoint principal
 │   │   ├── infer/                # Scripts de inferencia por modelo
 │   │   ├── train/                # Scripts de entrenamiento  
 │   │   ├── eval/                 # Scripts de evaluación
-│   │   └── models/               # Modelos y artefactos entrenados
+│   │   └── models/               # Modelos entrenados (YOLOv8, CLIP, encoders, etc.)
 │   └── frontend/                 # Aplicación React
 │       ├── src/components/       # Componentes UI
 │       └── public/               # Archivos estáticos

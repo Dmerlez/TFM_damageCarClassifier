@@ -16,12 +16,12 @@ from sklearn.preprocessing import label_binarize
 # Directorio base del script actual
 BASE_DIR = Path(__file__).resolve().parent
 
-# Ruta a la carpeta models (subiendo tres niveles)
-models_dir = BASE_DIR.parents[2] / "models"
+# Ruta a la carpeta models (subiendo un nivel hasta src/backend)
+models_dir = BASE_DIR.parent / "models"
 
 # Cargar datos extraídos previamente
 X = np.load(models_dir / "X_clip.npy")
-y = np.load(models_dir / "Y_clip.npy")
+y = np.load(models_dir / "y_labels.npy")
 
 # Codificar etiquetas string a números
 le = LabelEncoder()
@@ -89,8 +89,8 @@ for name, model in models.items():
     # Ruta base al directorio del script actual
     BASE_DIR = Path(__file__).resolve().parent
 
-    # Ruta relativa a la carpeta models (sube 3 niveles desde /infer)
-    models_dir = BASE_DIR.parents[2] / "models"
+    # Ruta relativa a la carpeta models (sube 1 nivel desde /infer hasta src/backend)
+    models_dir = BASE_DIR.parent / "models"
 
     # Guardar modelo, scaler y LabelEncoder
     joblib.dump(model, models_dir / f"{name}_clip_model.pkl")
