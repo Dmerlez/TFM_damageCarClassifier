@@ -7,7 +7,7 @@ from transformers import CLIPProcessor, CLIPModel
 import torch
 
 # ---- CONFIG ----
-CLASSES = ["Abolladuras", "Intacto", "Rallones", "Siniestro"]
+CLASSES = ["Abolladuras", "Intacto", "Rayones", "Siniestro"]
 TRAIN_DIR = "data/train"
 VAL_DIR = "data/val"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"

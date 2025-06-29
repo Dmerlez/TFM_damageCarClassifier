@@ -5,7 +5,7 @@ This project compares three approaches for vehicle damage classification based o
 1. **YOLO Fine-Tuning** – Trained on custom dataset for multi-class classification:
    - abolladuras (dents)
    - intacto (no damage)
-   - rallones (scratches)
+   - rayones (scratches)
    - siniestro (structural damage)
 
 2. **ChatGPT Vision API** – Uses GPT-4 with image input to classify photos via prompting.

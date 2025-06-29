@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { FETCH_CONFIRM_URL } from "../constants/endpoints";
 
 const ActionButtonsWrapper = styled.div`
   display: flex;
@@ -102,10 +103,35 @@ const ActionButtonsWrapper = styled.div`
   }
 `;
 
-const ActionButtons = () => {
-  const handleOkClick = () => {
-    alert("Datos guardados correctamente");
-    window.location.reload();
+interface ActionButtonsProps {
+  taskId: string;
+}
+
+const ActionButtons = ({ taskId }: ActionButtonsProps) => {
+  const handleOkClick = async () => {
+    try {
+      // Mostrar mensaje de carga
+      const confirmUrl = FETCH_CONFIRM_URL.replace(":taskId", taskId);
+      
+      const response = await fetch(confirmUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(`✅ ${result.message}\n📁 Guardado en: uploads/`);
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        alert(`❌ Error al guardar: ${error.detail}`);
+      }
+    } catch (error) {
+      console.error("Error confirmando datos:", error);
+      alert("❌ Error de conexión al guardar los datos");
+    }
   };
 
   const handleCancelClick = () => window.location.reload();

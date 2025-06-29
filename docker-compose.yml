@@ -10,6 +10,7 @@ services:
     volumes:
       - ./src/backend:/app
       - ./src/backend/models/hf:/models/hf
+      - ./src/data:/data
     env_file: .env
 
   frontend:
