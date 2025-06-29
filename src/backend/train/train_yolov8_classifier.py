@@ -163,7 +163,7 @@ def main():
     PROJECT_ROOT = os.path.join(BASE_DIR, "..", "..", "..")
     
     # Ruta a los datos originales
-    data_origen = "/Users/davidmerlez/Desktop/Master UIC/TFM/github/TFM_damageCarClassifier/data/all"
+    data_origen = os.path.join(PROJECT_ROOT, "data", "all")
     
     # Ruta para el dataset preparado
     dataset_destino = os.path.join(PROJECT_ROOT, "data", "yolov8_dataset")
