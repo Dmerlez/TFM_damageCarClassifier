@@ -1,7 +1,7 @@
 CLASSES = [
     "Abolladuras",  # dents
     "Intacto",      # no damage
-    "Rallones",     # scratches
+    "Rayones",      # scratches
     "Siniestro"     # structural damage
 ]
 
@@ -16,7 +16,7 @@ CLASSES = [
 #CLASS_MAPPING = {
 #    "Un coche con una gran abolladura en la puerta lateral": "Abolladuras",
 #    "Un vehículo limpio y sin ningún tipo de daño visible": "Intacto",
-#    "Carro con rayones superficiales visibles en la pintura": "Rallones",
+#    "Carro con rayones superficiales visibles en la pintura": "Rayones",
 #    "Vehículo siniestrado con daños estructurales severos": "Siniestro",
 #    "indeterminado": "Indeterminado"  # clave consistente en minúscula
 #}
@@ -52,7 +52,7 @@ PROMPTS_BY_CLASS = {
         "An undamaged sedan with even paint and no visible flaws.",
         "A car that looks recently washed and completely intact."
     ],
-    "Rallones": [
+    "Rayones": [
         "A car with scratches on the paint",
         "A vehicle with visible surface scratches",
         "A car with minor scratches on the bumper or doors"        

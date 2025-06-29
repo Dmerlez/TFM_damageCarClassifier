@@ -6,6 +6,7 @@ scikit-learn
 xgboost
 numpy
 pandas
+ultralytics
 
 # Image processing
 Pillow

@@ -19,7 +19,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 #from backend.infer.infer_chatgpt import predict_with_chatgpt
 
 from infer.mlp_predictor import predict_with_mlp 
-from infer.infer_chatgpt import predict_with_chatgpt 
+from infer.infer_chatgpt import predict_with_chatgpt
+from infer.infer_yolov8 import predict_with_yolov8 
 
 now = datetime.now().strftime("%d/%m/%Y - %H:%M")
 now1 = datetime.now().strftime("%d/%m/%Y a las %H:%M")
@@ -72,6 +73,12 @@ async def get_mapping(task_id: str, file_path: str):
         print("GPT Vision - Confianza:", confidence_gpt)
         print("GPT Answer: ", response_gpt)
 
+        # Realizar inferencia con YOLOv8
+        yolo_class, yolo_score, yolo_top3 = predict_with_yolov8(file_path)
+        yolo_score_pct = round(float(yolo_score) * 100, 2)
+        print("YOLOv8 - Etiqueta:", yolo_class)
+        print("YOLOv8 - Confianza:", f"{yolo_score_pct}%")
+
         # Formatear fecha y hora
         now = datetime.now().strftime("%d/%m/%Y - %H:%M")
 
@@ -86,6 +93,9 @@ async def get_mapping(task_id: str, file_path: str):
                 "Modelo 2": "CLIP + MLPClassifier",
                 "Etiqueta": top_class,
                 "Probabilidad": f"{score_top1}%",
+                "Modelo 3": "YOLOv8 Classifier",
+                "Etiqueta_yolo": yolo_class,
+                "Probabilidad_yolo": f"{yolo_score_pct}%",
                 #"Top 3 resultados": top3_scores,
                 "Fecha y hora": now,
                 "Imagen": file_name,
@@ -178,5 +188,57 @@ async def check_status(task_id: str):
 
     return {"task_id": task_id, "status": "Success", "response": result.get("response")}
 
-
-
+@app.post("/confirm/{task_id}")
+async def confirm_results(task_id: str):
+    """
+    API endpoint para confirmar y guardar permanentemente los resultados.
+    Copia los datos del task_id a la carpeta de uploads permanente.
+    """
+    
+    try:
+        task_folder = os.path.join(UPLOAD_FOLDER, task_id)
+        response_file = os.path.join(task_folder, "response.json")
+        
+        # Verificar que existen los datos del task
+        if not os.path.exists(task_folder):
+            raise HTTPException(status_code=404, detail="Task not found")
+            
+        if not os.path.exists(response_file):
+            raise HTTPException(status_code=404, detail="Task results not found")
+        
+        # Leer los datos del resultado
+        with open(response_file, "r", encoding="utf-8") as f:
+            result_data = json.load(f)
+        
+        # Crear timestamp para carpeta permanente
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        permanent_folder = os.path.join(UPLOAD_FOLDER, f"confirmed_{timestamp}_{task_id}")
+        os.makedirs(permanent_folder, exist_ok=True)
+        
+        # Copiar todos los archivos del task a la carpeta permanente
+        for file_name in os.listdir(task_folder):
+            source_file = os.path.join(task_folder, file_name)
+            dest_file = os.path.join(permanent_folder, file_name)
+            shutil.copy2(source_file, dest_file)
+        
+        # Agregar información de confirmación
+        result_data["confirmed_at"] = datetime.now().strftime("%d/%m/%Y - %H:%M")
+        result_data["confirmed_folder"] = permanent_folder
+        
+        # Guardar resultado confirmado
+        confirmed_file = os.path.join(permanent_folder, "confirmed_result.json")
+        with open(confirmed_file, "w", encoding="utf-8") as f:
+            json.dump(result_data, f, indent=2, ensure_ascii=False)
+        
+        print(f"✅ Datos confirmados y guardados en: {permanent_folder}")
+        
+        return {
+            "status": "success", 
+            "message": "Datos guardados correctamente",
+            "saved_to": permanent_folder,
+            "task_id": task_id
+        }
+        
+    except Exception as e:
+        print(f"❌ Error confirmando datos para task {task_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error saving data: {str(e)}")

@@ -48,7 +48,7 @@ const TaskResultsWrapper = styled.div`
   .content {
     background-image: url("/background.png");
     background-size: contain;
-    height: 75vh;
+    height: 71vh;
     width: 100%;  
     border-radius: 0 0 10px 10px;
     font-size: 16px;
@@ -272,14 +272,22 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
               {/* Divider here */}
               <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid #ccc", margin: "10px 0" }} />
 
-
               <div className="result-label"><strong>Modelo 2:</strong></div>
               <div className="result-value">{taskResult["Modelo 2"]}</div>
               <div className="result-label"><strong>Etiqueta:</strong> </div>
               <div className="result-value">{taskResult["Etiqueta"]}</div>
-
               <div className="result-label"><strong>Confianza:</strong> </div>
               <div className="result-value">{taskResult.Probabilidad}</div>
+
+              {/* Divider here */}
+              <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid #ccc", margin: "10px 0" }} />
+
+              <div className="result-label"><strong>Modelo 3:</strong></div>
+              <div className="result-value">{taskResult["Modelo 3"]}</div>
+              <div className="result-label"><strong>Etiqueta:</strong> </div>
+              <div className="result-value">{taskResult["Etiqueta_yolo"]}</div>
+              <div className="result-label"><strong>Confianza:</strong> </div>
+              <div className="result-value">{taskResult["Probabilidad_yolo"]}</div>
 
               {/*
               <div className="result-label"><strong>Top 3 resultados:</strong> </div>
@@ -358,9 +366,17 @@ const TaskResults = ({ taskResult, image }: TaskResultsProps) => {
             <div className="result-value">{taskResult["Modelo 2"]}</div>
             <div className="result-label"><strong>Etiqueta:</strong> </div>
               <div className="result-value">{taskResult["Etiqueta"]}</div>
-
               <div className="result-label"><strong>Confianza:</strong> </div>
               <div className="result-value">{taskResult.Probabilidad}</div>
+              
+              {/* Divider here */}
+              <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid #ccc", margin: "10px 0" }} />
+              <div className="result-label"><strong>Modelo 3:</strong> </div>
+              <div className="result-value">{taskResult["Modelo 3"]}</div>
+              <div className="result-label"><strong>Etiqueta:</strong> </div>
+              <div className="result-value">{taskResult["Etiqueta_yolo"]}</div>
+              <div className="result-label"><strong>Confianza:</strong> </div>
+              <div className="result-value">{taskResult["Probabilidad_yolo"]}</div>
               
               {/*
               <div className="result-label"><strong>Top 3 resultados:</strong> </div>

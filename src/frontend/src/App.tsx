@@ -63,7 +63,7 @@ function App() {
             direction="bottom"
             position={{ left: "230px", top: "280px" }}
             text={ROBOT_TEXT_FINAL}
-            actions={<ActionButtons />}
+            actions={<ActionButtons taskId={taskId!} />}
             showSpeech={true}
           />
           <TaskResults taskResult={taskResponse} image={uploadedImage!} />

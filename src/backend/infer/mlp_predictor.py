@@ -21,13 +21,15 @@ encoder_path = os.path.join(BASE_DIR, "..", "models", "MLPClassifier_label_encod
 #clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 from transformers import CLIPModel, CLIPProcessor
 
+clip_model_path = os.path.join(BASE_DIR, "..", "models", "hf", "clip-vit-base-patch32")
+
 clip_model = CLIPModel.from_pretrained(
-    "/models/hf/clip-vit-base-patch32",
+    clip_model_path,
     local_files_only=True
 )
 
 clip_processor = CLIPProcessor.from_pretrained(
-    "/models/hf/clip-vit-base-patch32",
+    clip_model_path,
     local_files_only=True
 )
 
