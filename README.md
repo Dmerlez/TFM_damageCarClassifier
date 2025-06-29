@@ -1,4 +1,4 @@
-# Vehicle Damage Detection Project
+# Vehicle Damage Detection Project 
 
 Este proyecto compara tres enfoques para la clasificación de daños vehiculares basados en imágenes:
 
