@@ -1,106 +1,144 @@
-import os
+"""
+Módulo de inferencia para YOLOv8 en clasificación de daños vehiculares.
+"""
 import numpy as np
-
-# Configuración para entorno headless (Docker)
-os.environ['MPLBACKEND'] = 'Agg'  # Matplotlib sin GUI
-os.environ['OPENCV_IO_ENABLE_OPENEXR'] = '1'
-
-# Importar después de configurar entorno
 from ultralytics import YOLO
 from PIL import Image
 import torch
+from typing import Tuple, Dict, Optional
 
-# Configuración adicional para ultralytics en Docker
-os.environ['YOLO_VERBOSE'] = 'False'
+# Importar utilidades comunes
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils import setup_environment_for_docker, get_model_path, validate_image_path, logger
 
-# Carpeta donde está tu script actual
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Configurar entorno para Docker
+setup_environment_for_docker()
 
-# Ruta al modelo YOLOv8 entrenado
-model_path = os.path.join(BASE_DIR, "..", "models", "yolov8_damage_classifier.pt")
-
-# Clases del modelo YOLOv8 (deben coincidir con las carpetas de entrenamiento)
+# Configuración del modelo
+MODEL_FILENAME = "yolov8_damage_classifier.pt"
+FALLBACK_MODEL = "yolov8n-cls.pt"
 YOLO_CLASSES = ["Abolladuras", "Intacto", "Rayones", "Siniestro"]
 
-# Variable global para el modelo
-yolo_model = None
+# Variable global para el modelo (lazy loading)
+yolo_model: Optional[YOLO] = None
 
-def load_yolo_model():
-    """Carga el modelo YOLOv8 de forma lazy"""
+
+def load_yolo_model() -> YOLO:
+    """Carga el modelo YOLOv8 de forma lazy con fallback automático."""
     global yolo_model
+    
     if yolo_model is None:
-        if os.path.exists(model_path):
-            print(f"Cargando modelo YOLOv8 desde: {model_path}")
-            yolo_model = YOLO(model_path)
+        model_path = get_model_path(MODEL_FILENAME)
+        
+        if model_path.exists():
+            logger.info(f"Cargando modelo YOLOv8 desde: {model_path}")
+            yolo_model = YOLO(str(model_path))
         else:
-            print(f"⚠️  Modelo YOLOv8 no encontrado en {model_path}")
-            print("Usando modelo preentrenado yolov8n-cls.pt como fallback")
-            yolo_model = YOLO('yolov8n-cls.pt')
+            logger.warning(f"⚠️  Modelo YOLOv8 no encontrado en {model_path}")
+            logger.info(f"Usando modelo preentrenado {FALLBACK_MODEL} como fallback")
+            yolo_model = YOLO(FALLBACK_MODEL)
+    
     return yolo_model
 
-def predict_with_yolov8(image_path: str):
+
+def predict_with_yolov8(image_path: str) -> Tuple[str, float, Dict[str, float]]:
     """
-    Realiza predicción con YOLOv8 siguiendo el mismo patrón que los otros predictors
+    Realiza predicción con YOLOv8 para clasificación de daños vehiculares.
     
     Args:
         image_path (str): Ruta a la imagen
         
     Returns:
-        tuple: (top_class, top_prob, top3_dict)
+        tuple: (clase_principal, probabilidad_principal, diccionario_top3)
+        
+    Raises:
+        ValueError: Si la imagen no es válida
+        RuntimeError: Si hay error en la predicción
     """
+    # Validar imagen
+    if not validate_image_path(image_path):
+        raise ValueError(f"Imagen no válida o no encontrada: {image_path}")
+    
     try:
+        # Cargar modelo
         model = load_yolo_model()
         
         # Realizar predicción
-        results = model.predict(image_path, imgsz=224, verbose=False)
+        results = model(image_path, verbose=False)
         
         if not results or len(results) == 0:
-            raise ValueError("No se pudieron obtener resultados de YOLOv8")
+            raise RuntimeError("No se obtuvieron resultados de la predicción")
         
+        # Extraer probabilidades
         result = results[0]
+        probs = result.probs
         
-        # Obtener probabilidades
-        if hasattr(result, 'probs') and result.probs is not None:
-            probs = result.probs.data.cpu().numpy()
-            
-            # Si el modelo fue entrenado con nuestros datos, usar nuestras clases
-            if len(probs) == len(YOLO_CLASSES):
-                classes = YOLO_CLASSES
-            else:
-                # Fallback: usar las clases del modelo preentrenado
-                classes = [f"Clase_{i}" for i in range(len(probs))]
-            
-            # Obtener top class
-            top_idx = np.argmax(probs)
-            top_class = classes[top_idx]
-            top_prob = float(probs[top_idx])
-            
-            # Obtener top 3
-            top3_idx = np.argsort(probs)[-3:][::-1]
-            top3_dict = {classes[i]: float(probs[i]) for i in top3_idx}
-            
-            return top_class, top_prob, top3_dict
-            
+        if probs is None:
+            raise RuntimeError("No se pudieron extraer probabilidades del resultado")
+        
+        # Obtener índices y probabilidades ordenadas
+        top_indices = probs.top5
+        top_confidences = probs.top5conf.cpu().numpy()
+        
+        # Crear diccionario con top 3 resultados
+        top3_dict = {}
+        for i in range(min(3, len(top_indices))):
+            class_idx = top_indices[i]
+            if class_idx < len(YOLO_CLASSES):
+                class_name = YOLO_CLASSES[class_idx]
+                confidence = float(top_confidences[i])
+                top3_dict[class_name] = confidence
+        
+        # Obtener resultado principal
+        if top3_dict:
+            top_class = next(iter(top3_dict))
+            top_confidence = top3_dict[top_class]
         else:
-            raise ValueError("El modelo YOLOv8 no devolvió probabilidades válidas")
-            
+            # Fallback si no hay resultados válidos
+            top_class = "Indeterminado"
+            top_confidence = 0.0
+            top3_dict = {"Indeterminado": 0.0}
+        
+        logger.info(f"YOLOv8 prediction: {top_class} ({top_confidence:.2%})")
+        
+        return top_class, top_confidence, top3_dict
+        
     except Exception as e:
-        print(f"Error en predicción YOLOv8: {str(e)}")
-        # Retornar valores por defecto en caso de error
-        return "Error", 0.0, {"Error": 0.0, "N/A": 0.0, "Unknown": 0.0}
+        logger.error(f"Error en predicción YOLOv8 para {image_path}: {str(e)}")
+        raise RuntimeError(f"Error en predicción YOLOv8: {str(e)}")
 
+
+def get_model_info() -> Dict[str, str]:
+    """Retorna información sobre el modelo YOLOv8 cargado."""
+    model = load_yolo_model()
+    model_path = get_model_path(MODEL_FILENAME)
+    
+    return {
+        "model_type": "YOLOv8 Classifier",
+        "model_path": str(model_path) if model_path.exists() else FALLBACK_MODEL,
+        "classes": YOLO_CLASSES,
+        "status": "loaded" if yolo_model is not None else "not_loaded"
+    }
+
+
+# Funciones de compatibilidad con código existente (para migración gradual)
 def train_yolov8_model(data_path: str, epochs: int = 50):
     """
-    Entrena el modelo YOLOv8 con los datos proporcionados
+    Entrena el modelo YOLOv8 con los datos proporcionados.
     
     Args:
         data_path (str): Ruta a la carpeta de datos estructurada
         epochs (int): Número de épocas de entrenamiento
     """
-    print(f"Iniciando entrenamiento YOLOv8 con datos en: {data_path}")
+    logger.info(f"Iniciando entrenamiento YOLOv8 con datos en: {data_path}")
     
     # Cargar modelo preentrenado
     model = YOLO('yolov8n-cls.pt')
+    
+    # Configurar ruta de salida
+    models_dir = get_model_path("").parent
     
     # Entrenar
     results = model.train(
@@ -110,23 +148,13 @@ def train_yolov8_model(data_path: str, epochs: int = 50):
         batch=16,
         patience=5,
         val=True,
-        project=os.path.join(BASE_DIR, "..", "models"),
+        project=str(models_dir),
         name="yolov8_damage_training"
     )
     
     # Guardar el modelo entrenado
-    model.save(model_path)
-    print(f"✅ Modelo YOLOv8 guardado en: {model_path}")
+    save_path = get_model_path(MODEL_FILENAME)
+    model.save(str(save_path))
+    logger.info(f"✅ Modelo YOLOv8 guardado en: {save_path}")
     
-    return results
-
-if __name__ == "__main__":
-    # Script para entrenar el modelo si se ejecuta directamente
-    import sys
-    
-    if len(sys.argv) > 1:
-        data_path = sys.argv[1]
-        train_yolov8_model(data_path)
-    else:
-        print("Uso: python infer_yolov8.py <ruta_a_datos>")
-        print("Ejemplo: python infer_yolov8.py /path/to/damage_dataset") 
+    return results 
