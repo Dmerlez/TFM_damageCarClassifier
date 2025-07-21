@@ -23,16 +23,23 @@ from transformers import CLIPModel, CLIPProcessor
 
 clip_model_path = os.path.join(BASE_DIR, "..", "models", "hf", "clip-vit-base-patch32")
 
-clip_model = CLIPModel.from_pretrained(
-    clip_model_path,
-    local_files_only=True
-)
-
-clip_processor = CLIPProcessor.from_pretrained(
-    clip_model_path,
-    local_files_only=True
-)
-
+# Intentar cargar desde directorio local, si no existe descargar desde Hugging Face
+try:
+    clip_model = CLIPModel.from_pretrained(
+        clip_model_path,
+        local_files_only=True
+    )
+    clip_processor = CLIPProcessor.from_pretrained(
+        clip_model_path,
+        local_files_only=True
+    )
+    print(f"✅ Modelo CLIP cargado desde directorio local: {clip_model_path}")
+except (OSError, FileNotFoundError):
+    print(f"⚠️  Modelo CLIP no encontrado localmente en {clip_model_path}")
+    print("📥 Descargando modelo CLIP desde Hugging Face...")
+    clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+    clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+    print("✅ Modelo CLIP descargado exitosamente desde Hugging Face")
 
 
 clip_model.eval()
