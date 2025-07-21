@@ -3,7 +3,6 @@ import sys
 import shutil
 import json
 import asyncio
-from collections import OrderedDict
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
@@ -14,231 +13,260 @@ from io import BytesIO
 # Añadir "src/" al PYTHONPATH
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# Importar desde backend.infer
-#from backend.infer.mlp_predictor import predict_with_mlp
-#from backend.infer.infer_chatgpt import predict_with_chatgpt
-
+# Importar funciones de inferencia
 from infer.mlp_predictor import predict_with_mlp 
 from infer.infer_chatgpt import predict_with_chatgpt
 from infer.infer_yolov8 import predict_with_yolov8 
 
-now = datetime.now().strftime("%d/%m/%Y - %H:%M")
-now1 = datetime.now().strftime("%d/%m/%Y a las %H:%M")
 # Initialize FastAPI
-app = FastAPI()
+app = FastAPI(title="Vehicle Damage Classifier API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (use specific domains for security)
+    allow_origins=["*"],  # En producción, especificar dominios específicos
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
- 
 # Define upload folder
 UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/uploads"))
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# Constantes
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"}
+
+
+def get_current_timestamp() -> str:
+    """Retorna timestamp formateado para respuestas."""
+    return datetime.now().strftime("%d/%m/%Y - %H:%M")
+
+
+def get_image_info(file_path: str) -> dict:
+    """Extrae información básica de la imagen."""
+    file_name = os.path.basename(file_path)
+    with open(file_path, "rb") as f:
+        file_bytes = f.read()
+        file_size_mb = round(len(file_bytes) / (1024 * 1024), 2)
+        image = Image.open(BytesIO(file_bytes))
+        width, height = image.size
+    
+    return {
+        "file_name": file_name,
+        "file_size_mb": file_size_mb,
+        "width": width,
+        "height": height
+    }
+
+
+def calculate_confidence_metrics(top3_scores: dict) -> tuple:
+    """Calcula métricas de confianza basadas en los top 3 scores."""
+    top_scores = sorted(top3_scores.items(), key=lambda x: x[1], reverse=True)
+    top1_score = top_scores[0][1]
+    top2_score = top_scores[1][1] if len(top_scores) > 1 else 0
+    
+    confianza_pct = round((top1_score - top2_score) * 100, 2)
+    confianza_label = "Alta" if confianza_pct > 50 else "Media" if confianza_pct > 20 else "Baja"
+    
+    return confianza_pct, confianza_label
+
+
+def save_response_to_file(response: dict, task_id: str) -> None:
+    """Guarda la respuesta como archivo JSON."""
+    response_file = os.path.join(UPLOAD_FOLDER, task_id, "response.json")
+    
+    def json_converter(obj):
+        """Convierte tipos numpy a tipos JSON serializables."""
+        if isinstance(obj, np.float32):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+    
+    with open(response_file, "w", encoding="utf-8") as f:
+        json.dump(response, f, indent=2, default=json_converter, ensure_ascii=False)
+
+
+async def process_image_predictions(file_path: str) -> dict:
+    """Ejecuta las predicciones de los tres modelos y retorna resultados consolidados."""
+    
+    # Obtener información de la imagen
+    image_info = get_image_info(file_path)
+    
+    # Predicción con CLIP + MLP
+    mlp_class, mlp_score, mlp_top3 = predict_with_mlp(file_path)
+    mlp_score_pct = round(float(mlp_score) * 100, 2)
+    mlp_top3_formatted = {label: round(float(prob), 2) for label, prob in mlp_top3.items()}
+    
+    # Predicción con ChatGPT
+    gpt_label, gpt_confidence = predict_with_chatgpt(file_path)
+    print(f"GPT Vision - Etiqueta: {gpt_label}, Confianza: {gpt_confidence}")
+    
+    # Predicción con YOLOv8
+    yolo_class, yolo_score, yolo_top3 = predict_with_yolov8(file_path)
+    yolo_score_pct = round(float(yolo_score) * 100, 2)
+    print(f"YOLOv8 - Etiqueta: {yolo_class}, Confianza: {yolo_score_pct}%")
+    
+    return {
+        "mlp": {"class": mlp_class, "score": mlp_score_pct, "top3": mlp_top3_formatted},
+        "gpt": {"class": gpt_label, "confidence": gpt_confidence},
+        "yolo": {"class": yolo_class, "score": yolo_score_pct, "top3": yolo_top3},
+        "image_info": image_info
+    }
+
 
 async def get_mapping(task_id: str, file_path: str):
+    """Procesa la imagen con los tres modelos y guarda los resultados."""
     print(f"\nProcessing task: {task_id}...")
 
     try:
-        # Obtener información del archivo
-        file_name = os.path.basename(file_path)
-        with open(file_path, "rb") as f:
-            file_bytes = f.read()
-            file_size_mb = round(len(file_bytes) / (1024 * 1024), 2)
-            image = Image.open(BytesIO(file_bytes))
-            width, height = image.size
-
-        # Realizar inferencia con Zero-Shot
-        top_class, score_top1, top3_scores = predict_with_mlp(file_path)
-        score_top1 = round(float(score_top1) * 100, 2)
-        top3_scores = {label: round(float(prob), 2) for label, prob in top3_scores.items()}
-
-        top_scores = sorted(top3_scores.items(), key=lambda x: x[1], reverse=True)
-        top1_score = top_scores[0][1]
-        top2_score = top_scores[1][1]
-        confianza_pct = round((top1_score - top2_score) * 100, 2)
-        confianza_label = "Alta" if confianza_pct > 50 else "Media" if confianza_pct > 20 else "Baja"
-
-        # Realizar inferencia con ChatGPT
-        response_gpt = predict_with_chatgpt(file_path)
-
-        # Realizar inferencia con ChatGPT
-        label_gpt, confidence_gpt = predict_with_chatgpt(file_path)
-        print("GPT Vision - Etiqueta:", label_gpt)
-        print("GPT Vision - Confianza:", confidence_gpt)
-        print("GPT Answer: ", response_gpt)
-
-        # Realizar inferencia con YOLOv8
-        yolo_class, yolo_score, yolo_top3 = predict_with_yolov8(file_path)
-        yolo_score_pct = round(float(yolo_score) * 100, 2)
-        print("YOLOv8 - Etiqueta:", yolo_class)
-        print("YOLOv8 - Confianza:", f"{yolo_score_pct}%")
-
-        # Formatear fecha y hora
-        now = datetime.now().strftime("%d/%m/%Y - %H:%M")
-
-        # Crear response
+        # Ejecutar predicciones
+        predictions = await process_image_predictions(file_path)
+        
+        # Crear respuesta estructurada
         response = {
             "task_id": task_id,
             "status": "Success",
             "response": {
                 "Modelo 1": "Chat GPT 4 vision",
-                "Etiqueta_gpt": label_gpt,
-                "Probabilidad_gpt": confidence_gpt,
+                "Etiqueta_gpt": predictions["gpt"]["class"],
+                "Probabilidad_gpt": predictions["gpt"]["confidence"],
                 "Modelo 2": "CLIP + MLPClassifier",
-                "Etiqueta": top_class,
-                "Probabilidad": f"{score_top1}%",
+                "Etiqueta": predictions["mlp"]["class"],
+                "Probabilidad": f"{predictions['mlp']['score']}%",
                 "Modelo 3": "YOLOv8 Classifier",
-                "Etiqueta_yolo": yolo_class,
-                "Probabilidad_yolo": f"{yolo_score_pct}%",
-                #"Top 3 resultados": top3_scores,
-                "Fecha y hora": now,
-                "Imagen": file_name,
-                "Tamaño archivo": f"{file_size_mb} MB",
-                "Resolución": f"{width} x {height} px"
+                "Etiqueta_yolo": predictions["yolo"]["class"],
+                "Probabilidad_yolo": f"{predictions['yolo']['score']}%",
+                "Fecha y hora": get_current_timestamp(),
+                "Imagen": predictions["image_info"]["file_name"],
+                "Tamaño archivo": f"{predictions['image_info']['file_size_mb']} MB",
+                "Resolución": f"{predictions['image_info']['width']} x {predictions['image_info']['height']} px"
             },
         }
-
-        response_file = os.path.join(UPLOAD_FOLDER, task_id, "response.json")
-        print(f"📁 Guardando response en: {response_file}")
+        
         print(f"✅ Processing succeeded for task {task_id}")
 
     except Exception as e:
-        print(f"Processing failed for task {task_id}: {str(e)}")
+        print(f"❌ Processing failed for task {task_id}: {str(e)}")
         response = {"task_id": task_id, "status": "Failed", "response": None}
 
-    # Guardar el response como JSON
-    response_file = os.path.join(UPLOAD_FOLDER, task_id, "response.json")
-    def convert(o):
-        if isinstance(o, np.float32):
-            return float(o)
-        if isinstance(o, np.ndarray):
-            return o.tolist()
-        raise TypeError(f"Object of type {type(o)} is not JSON serializable")
-    with open(response_file, "w", encoding="utf-8") as f:
-        json.dump(response, f, indent=2, default=convert, ensure_ascii=False)
+    # Guardar respuesta
+    save_response_to_file(response, task_id)
+
 
 @app.post("/upload")
-async def upload_excel(file: UploadFile = File(...), task_id: str = Form()):
-    """
-    API endpoint to upload an Excel file along with a task_id from the payload.
-    """
+async def upload_image(file: UploadFile = File(...), task_id: str = Form()):
+    """Endpoint para subir una imagen y procesarla con los modelos."""
+    
+    print(f"📤 File '{file.filename}' uploaded for task '{task_id}'")
 
-    print(f"File '{file.filename}' uploaded successfully under task '{task_id}'! Processing...")
+    # Validar tipo de archivo
+    file_extension = os.path.splitext(file.filename)[1].lower()
+    if file_extension not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
 
-    # Ensure the file is an Excel file
-    if not file.filename.endswith((".jpg", ".JPG",  ".jpeg", ".JPEG", ".PNG", ".png")):
-        raise HTTPException(status_code=400, detail="Invalid file type. Please upload a valid image.")
-
-    # Create task-specific folder
+    # Crear carpeta específica para la tarea
     task_folder = os.path.join(UPLOAD_FOLDER, task_id)
     os.makedirs(task_folder, exist_ok=True)
 
-    # Save the uploaded file
+    # Guardar archivo
     file_path = os.path.join(task_folder, file.filename)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    print(f"\n📂 File '{file.filename}' uploaded successfully under task '{task_id}'! Processing...")
+    print(f"📂 File saved to: {file_path}")
 
-    # Run the pipeline asynchronously
+    # Ejecutar pipeline de forma asíncrona
     asyncio.create_task(get_mapping(task_id, file_path))
 
-    return {"status": "success"}
+    return {"status": "success", "message": "File uploaded and processing started"}
+
 
 @app.get("/check-status/{task_id}")
 async def check_status(task_id: str):
-    """
-    API Endpoint to check the status of a mapping task.
-    Returns:
-    - "Pending" if processing is still ongoing.
-    - "Failed" if processing failed.
-    - "Success" with mapping results if processing is complete.
-    """
-
+    """Verifica el estado de procesamiento de una tarea."""
+    
     task_folder = os.path.join(UPLOAD_FOLDER, task_id)
     response_file = os.path.join(task_folder, "response.json")
 
-    # Case 1: Task folder doesn't exist → "Pending"
+    # Verificar si existe la carpeta de la tarea
     if not os.path.exists(task_folder):
         return {"task_id": task_id, "status": "Pending", "response": None}
 
-    # Case 2: Response file doesn't exist → "Pending"
+    # Verificar si existe el archivo de respuesta
     if not os.path.exists(response_file):
         return {"task_id": task_id, "status": "Pending", "response": None}
 
-    # Case 3: Response file exists → Check if processing succeeded or failed
+    # Leer y retornar resultados
     try:
         with open(response_file, "r", encoding="utf-8") as f:
             content = f.read().strip()
             if not content:
-                raise ValueError("Empty response file.")
+                raise ValueError("Empty response file")
+            
             result = json.loads(content)
+            
     except (json.JSONDecodeError, ValueError) as e:
-        print(f"Failed to parse response.json for task {task_id}: {e}")
+        print(f"❌ Failed to parse response.json for task {task_id}: {e}")
         return {"task_id": task_id, "status": "Failed", "response": None}
 
-    if result.get("status") == "Failed":
-        return {"task_id": task_id, "status": "Failed", "response": None}
+    # Retornar estado según el resultado
+    status = result.get("status", "Failed")
+    response_data = result.get("response") if status == "Success" else None
+    
+    return {"task_id": task_id, "status": status, "response": response_data}
 
-    return {"task_id": task_id, "status": "Success", "response": result.get("response")}
 
 @app.post("/confirm/{task_id}")
 async def confirm_results(task_id: str):
-    """
-    API endpoint para confirmar y guardar permanentemente los resultados.
-    Copia los datos del task_id a la carpeta de uploads permanente.
-    """
+    """Confirma y guarda permanentemente los resultados de una tarea."""
     
     try:
         task_folder = os.path.join(UPLOAD_FOLDER, task_id)
         response_file = os.path.join(task_folder, "response.json")
         
-        # Verificar que existen los datos del task
+        # Validar existencia de datos
         if not os.path.exists(task_folder):
             raise HTTPException(status_code=404, detail="Task not found")
             
         if not os.path.exists(response_file):
             raise HTTPException(status_code=404, detail="Task results not found")
         
-        # Leer los datos del resultado
+        # Leer resultados
         with open(response_file, "r", encoding="utf-8") as f:
             result_data = json.load(f)
         
-        # Crear timestamp para carpeta permanente
+        # Crear carpeta permanente con timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         permanent_folder = os.path.join(UPLOAD_FOLDER, f"confirmed_{timestamp}_{task_id}")
         os.makedirs(permanent_folder, exist_ok=True)
         
-        # Copiar todos los archivos del task a la carpeta permanente
+        # Copiar archivos a carpeta permanente
         for file_name in os.listdir(task_folder):
             source_file = os.path.join(task_folder, file_name)
             dest_file = os.path.join(permanent_folder, file_name)
             shutil.copy2(source_file, dest_file)
         
-        # Agregar información de confirmación
-        result_data["confirmed_at"] = datetime.now().strftime("%d/%m/%Y - %H:%M")
+        # Agregar metadatos de confirmación
+        result_data["confirmed_at"] = get_current_timestamp()
         result_data["confirmed_folder"] = permanent_folder
         
         # Guardar resultado confirmado
         confirmed_file = os.path.join(permanent_folder, "confirmed_result.json")
-        with open(confirmed_file, "w", encoding="utf-8") as f:
-            json.dump(result_data, f, indent=2, ensure_ascii=False)
+        save_response_to_file(result_data, "confirmed")
         
-        print(f"✅ Datos confirmados y guardados en: {permanent_folder}")
+        print(f"✅ Data confirmed and saved to: {permanent_folder}")
         
         return {
             "status": "success", 
-            "message": "Datos guardados correctamente",
+            "message": "Data saved successfully",
             "saved_to": permanent_folder,
             "task_id": task_id
         }
         
     except Exception as e:
-        print(f"❌ Error confirmando datos para task {task_id}: {str(e)}")
+        print(f"❌ Error confirming data for task {task_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error saving data: {str(e)}")

@@ -1,3 +1,4 @@
+# Clases principales del clasificador
 CLASSES = [
     "Abolladuras",  # dents
     "Intacto",      # no damage
@@ -5,23 +6,7 @@ CLASSES = [
     "Siniestro"     # structural damage
 ]
 
-#CLASSES_ZERO_SHOT = [
-#    "Un coche con una gran abolladura en la puerta lateral",
-#    "Un vehículo limpio y sin ningún tipo de daño visible",
-#    "Carro con rayones superficiales visibles en la pintura",
-#    "Vehículo siniestrado con daños estructurales severos"
-#]
-
-# Mapeo descriptivo → etiqueta base
-#CLASS_MAPPING = {
-#    "Un coche con una gran abolladura en la puerta lateral": "Abolladuras",
-#    "Un vehículo limpio y sin ningún tipo de daño visible": "Intacto",
-#    "Carro con rayones superficiales visibles en la pintura": "Rayones",
-#    "Vehículo siniestrado con daños estructurales severos": "Siniestro",
-#    "indeterminado": "Indeterminado"  # clave consistente en minúscula
-#}
-
-# Prompts enriquecidos por clase para Zero-Shot
+# Prompts enriquecidos por clase para Zero-Shot Classification
 PROMPTS_BY_CLASS = {
     "Abolladuras": [
         "A car with a large dent on the front side panel",
@@ -68,17 +53,12 @@ PROMPTS_BY_CLASS = {
     ]
 }
 
-
-# Mapping final no necesario si usamos las claves como etiquetas directamente
-# Pero lo dejamos por compatibilidad
+# Mapeo de prompts a clases (para compatibilidad con código existente)
 CLASS_MAPPING = {
     prompt: class_name
     for class_name, prompts in PROMPTS_BY_CLASS.items()
     for prompt in prompts
 } | {"indeterminate": "Indeterminado"}  # Python 3.9+ merge de dicts
 
-# Etiquetas únicas para evaluación (sin duplicados)
+# Etiquetas únicas para evaluación
 EVAL_CLASSES = list(PROMPTS_BY_CLASS.keys())
-
-# Eliminamos duplicados con set()
-#EVAL_CLASSES = list(set(CLASS_MAPPING.values()))
